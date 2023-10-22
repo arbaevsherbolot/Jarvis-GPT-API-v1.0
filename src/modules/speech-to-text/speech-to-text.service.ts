@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ChatGptService } from '../chat-gpt/chat-gpt.service';
 import { StartRecognitionDto } from './dto/speech-to-text.dto';
 import { Readable } from 'stream';
-import * as FormData from 'form-data';
+import FormData from 'form-data'; 
 import axios from 'axios';
 
 @Injectable()
@@ -47,7 +47,7 @@ export class SpeechToTextService {
 
       const aiReply = await this.chatGptService.chatGptRequest(
         transcript,
-        'Make my text better, clear and understandable',
+        'Just answer to my questions',
       );
 
       return { transcript, aiReply };
