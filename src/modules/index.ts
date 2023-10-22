@@ -1,0 +1,1 @@
+export * from './speech-to-text/speech-to-text.module'
