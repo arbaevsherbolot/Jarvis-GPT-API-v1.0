@@ -5,6 +5,8 @@ async function start() {
   const app = await NestFactory.create(AppModule, { cors: true });
   const port = process.env.PORT || 888;
 
+  app.enableCors();
+
   //Set the global prefix for our server
   app.setGlobalPrefix('api');
 
