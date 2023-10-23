@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ChatGptService } from '../chat-gpt/chat-gpt.service';
 import { StartRecognitionDto } from './dto/speech-to-text.dto';
 import { Readable } from 'stream';
-import * as FormData from 'form-data';
+import FormData from 'form-data';
 import axios from 'axios';
 
 @Injectable()
