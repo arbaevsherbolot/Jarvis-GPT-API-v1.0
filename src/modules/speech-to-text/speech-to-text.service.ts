@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ChatGptService } from '../chat-gpt/chat-gpt.service';
 import { StartRecognitionDto } from './dto/speech-to-text.dto';
 import { Readable } from 'stream';
-import FormData from 'form-data';
+import * as FormData from 'form-data';
 import axios from 'axios';
 
 @Injectable()
@@ -29,7 +29,7 @@ export class SpeechToTextService {
     formData.append('language', language);
     formData.append('response_format', format);
     formData.append('file', audioStream, {
-      filename: 'audio.mp3',
+      filename: 'audio.webm',
       contentType: 'audio/webm',
     });
 
@@ -46,7 +46,7 @@ export class SpeechToTextService {
       const transcript = response.data.text;
       const aiReply = await this.chatGptService.chatGptRequest(
         transcript,
-        'Imagine you are a highly experienced senior full-stack developer specializing in web development. Your tech stack includes JavaScript, TypeScript, Node.js, Nest.js, Next.js, React, Redux, Git, SCSS, various UI frameworks, Docker, SQL, and NoSQL databases. You have extensive expertise in these technologies and are well-versed in building web applications, and please answer to my question:',
+        'Make my answer better using the best Soft Skills',
       );
       return { transcript, aiReply };
     } catch (e) {
