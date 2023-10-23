@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ChatGptService } from '../chat-gpt/chat-gpt.service';
 import { StartRecognitionDto } from './dto/speech-to-text.dto';
 import { Readable } from 'stream';
-import FormData from 'form-data'; 
+import FormData from 'form-data';
 import axios from 'axios';
 
 @Injectable()
@@ -44,12 +44,10 @@ export class SpeechToTextService {
     try {
       const response = await axios.post(url, formData, config);
       const transcript = response.data.text;
-
       const aiReply = await this.chatGptService.chatGptRequest(
         transcript,
-        'Just answer to my questions',
+        'Imagine you are a highly experienced senior full-stack developer specializing in web development. Your tech stack includes JavaScript, TypeScript, Node.js, Nest.js, Next.js, React, Redux, Git, SCSS, various UI frameworks, Docker, SQL, and NoSQL databases. You have extensive expertise in these technologies and are well-versed in building web applications, and please answer to my question:',
       );
-
       return { transcript, aiReply };
     } catch (e) {
       throw new Error(e.message);
