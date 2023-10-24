@@ -1,21 +1,88 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import * as AWS from 'aws-sdk';
 import { ChatGptService } from '../chat-gpt/chat-gpt.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { StartRecognitionDto } from './dto/speech-to-text.dto';
 import { Readable } from 'stream';
-import FormData from 'form-data';
+import * as FormData from 'form-data';
+import { getUrl, uploadAudio } from '../../utils/supabase';
 import axios from 'axios';
 
 @Injectable()
 export class SpeechToTextService {
-  constructor(private chatGptService: ChatGptService) {}
+  private readonly polly: AWS.Polly;
 
-  async startRecognition(dto: StartRecognitionDto) {
+  constructor(
+    private chatGptService: ChatGptService,
+    private prisma: PrismaService,
+  ) {
+    AWS.config.update({
+      region: process.env.AWS_REGION,
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY,
+        secretAccessKey: process.env.AWS_SECRET_KEY,
+      },
+    });
+
+    this.polly = new AWS.Polly();
+  }
+
+  async synthesizeSpeech(userId: number, text: string) {
+    const params: AWS.Polly.Types.SynthesizeSpeechInput = {
+      OutputFormat: 'mp3',
+      Text: text,
+      TextType: 'text',
+      VoiceId: 'Matthew',
+    };
+
+    const result = await this.polly.synthesizeSpeech(params).promise();
+    const audioBuffer = result.AudioStream as Buffer;
+    const path = await uploadAudio(userId, audioBuffer);
+    const audioUrl = getUrl('/audios', path);
+
+    return audioUrl;
+  }
+
+  async startRecognition(dto: StartRecognitionDto, userId: number, id: number) {
     const { audio: base64Audio } = dto;
     const audioData = Buffer.from(base64Audio, 'base64');
+    const allMessages = [];
 
-    const bufferToStream = (buffer) => {
+    const bufferToStream = (buffer: Buffer) => {
       return Readable.from(buffer);
     };
+
+    const user = await this.prisma.user.findFirst({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const chat = await this.prisma.chat.findFirst({
+      where: {
+        id,
+        userId: user.id,
+      },
+    });
+
+    if (!chat) {
+      throw new UnauthorizedException('Chat not found');
+    }
+
+    const messages = await this.prisma.message.findMany({
+      where: {
+        userId: user.id,
+        chatId: chat.id,
+      },
+    });
+
+    if (messages.length > 0) {
+      allMessages.push(...messages);
+    }
 
     const formData = new FormData();
     const audioStream = bufferToStream(audioData);
@@ -44,11 +111,74 @@ export class SpeechToTextService {
     try {
       const response = await axios.post(url, formData, config);
       const transcript = response.data.text;
+      allMessages.push({
+        text: transcript,
+      });
       const aiReply = await this.chatGptService.chatGptRequest(
         transcript,
-        'Make my answer better using the best Soft Skills',
+        `Imagine you're an AI functioning as my personal Jarvis, you're name is Jarvis!, assisting me in various tasks. Answer very shortly and clear`,
+        allMessages,
       );
-      return { transcript, aiReply };
+      const audioUrl = await this.synthesizeSpeech(user.id, aiReply);
+      const message = await this.prisma.message.create({
+        data: {
+          chatId: chat.id,
+          userId: user.id,
+          text: transcript,
+          audioSource: audioUrl,
+        },
+      });
+      const reply = await this.prisma.message.create({
+        data: {
+          chatId: chat.id,
+          userId: user.id,
+          text: aiReply,
+          ai: true,
+        },
+      });
+
+      const result = {
+        message,
+        reply,
+      };
+
+      return result;
+    } catch (e) {
+      throw new Error(e.message);
+    }
+  }
+
+  async getMessages(id: number, userId: number) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const chat = await this.prisma.chat.findFirst({
+      where: {
+        id,
+        userId: user.id,
+      },
+    });
+
+    if (!chat) {
+      throw new UnauthorizedException('Chat not found');
+    }
+
+    const messages = await this.prisma.message.findMany({
+      where: {
+        userId: user.id,
+        chatId: chat.id,
+      },
+    });
+
+    try {
+      return messages;
     } catch (e) {
       throw new Error(e.message);
     }

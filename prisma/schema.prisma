@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  SUPERADMIN
+}
+
+model User {
+  id                  Int       @id @default(autoincrement())
+  role                UserRole  @default(USER)
+  firstName           String?
+  lastName            String?
+  photo               String?
+  email               String    @unique
+  phone               String?
+  bio                 String?
+  password            String
+  resetPasswordSecret String?
+  isActive            Boolean   @default(true)
+  isVerified          Boolean   @default(false)
+  requests            Int       @default(0)
+  lastRequest         DateTime?
+  refreshToken        String?
+  messages            Message[]
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  chats               Chat[]
+}
+
+model Message {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  text        String
+  ai          Boolean? @default(false)
+  chat        Chat     @relation(fields: [chatId], references: [id])
+  chatId      Int
+  audioSource String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Chat {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id])
+  title     String
+  mesages   Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
