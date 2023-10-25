@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateChatDto } from './dto';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -17,6 +21,17 @@ export class ChatService {
 
     if (!user) {
       throw new UnauthorizedException('User not found');
+    }
+
+    const existChat = await this.prisma.chat.findFirst({
+      where: {
+        userId: user.id,
+        title,
+      },
+    });
+
+    if (!existChat) {
+      throw new ConflictException('Chat already exists');
     }
 
     const newChat = await this.prisma.chat.create({
