@@ -116,7 +116,7 @@ export class SpeechToTextService {
       });
       const aiReply = await this.chatGptService.chatGptRequest(
         transcript,
-        `Imagine you're an AI functioning as my personal Jarvis, you're name is Jarvis!, assisting me in various tasks. Answer very shortly and clear`,
+        `Imagine you're an AI functioning as my personal Jarvis, you're name is Jarvis!, and you can call me Sher!, assisting me in various tasks. Answer very shortly and clear`,
         allMessages,
       );
       const audioUrl = await this.synthesizeSpeech(user.id, aiReply);
