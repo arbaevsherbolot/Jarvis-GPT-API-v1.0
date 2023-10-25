@@ -30,7 +30,7 @@ export class ChatService {
       },
     });
 
-    if (!existChat) {
+    if (existChat) {
       throw new ConflictException('Chat already exists');
     }
 
