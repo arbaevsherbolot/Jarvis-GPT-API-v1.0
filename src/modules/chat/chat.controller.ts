@@ -6,10 +6,11 @@ import {
   HttpStatus,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
-import { CreateChatDto } from './dto';
+import { CreateChatDto, EditChatDto } from './dto';
 import { GetCurrentUserId } from '../auth/common/decorators';
 
 @Controller('chat')
@@ -38,5 +39,24 @@ export class ChatController {
     @Param('id', ParseIntPipe) id: number,
   ) {
     return await this.chatService.getChat(id, userId);
+  }
+
+  @Patch(':id/archive')
+  @HttpCode(HttpStatus.OK)
+  async archiveChat(
+    @GetCurrentUserId() userId: number,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return await this.chatService.archiveChat(id, userId);
+  }
+
+  @Patch(':id')
+  @HttpCode(HttpStatus.OK)
+  async editChat(
+    @GetCurrentUserId() userId: number,
+    @Body() dto: EditChatDto,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return await this.chatService.editChat(id, userId, dto);
   }
 }

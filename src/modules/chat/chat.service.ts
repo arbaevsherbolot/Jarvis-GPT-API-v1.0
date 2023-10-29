@@ -3,7 +3,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { CreateChatDto } from './dto';
+import { CreateChatDto, EditChatDto } from './dto';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -11,7 +11,7 @@ export class ChatService {
   constructor(private prisma: PrismaService) {}
 
   async createChat(dto: CreateChatDto, userId: number) {
-    const { title } = dto;
+    const { title, language } = dto;
 
     const user = await this.prisma.user.findFirst({
       where: {
@@ -27,6 +27,7 @@ export class ChatService {
       where: {
         userId: user.id,
         title,
+        language,
       },
     });
 
@@ -38,6 +39,7 @@ export class ChatService {
       data: {
         userId: user.id,
         title,
+        language,
       },
     });
 
@@ -62,6 +64,7 @@ export class ChatService {
     const allChats = await this.prisma.chat.findMany({
       where: {
         userId: user.id,
+        isActive: true,
       },
     });
 
@@ -87,6 +90,7 @@ export class ChatService {
       where: {
         id,
         userId: user.id,
+        isActive: true,
       },
     });
 
@@ -96,6 +100,87 @@ export class ChatService {
 
     try {
       return chat;
+    } catch (e) {
+      throw new Error(e.message);
+    }
+  }
+
+  async archiveChat(id: number, userId: number) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const chat = await this.prisma.chat.findFirst({
+      where: {
+        id,
+        userId: user.id,
+      },
+    });
+
+    if (!chat) {
+      throw new UnauthorizedException('Chat not found');
+    }
+
+    const archivedChat = await this.prisma.chat.update({
+      where: {
+        id: chat.id,
+        userId: user.id,
+      },
+      data: {
+        isActive: false,
+      },
+    });
+
+    try {
+      return archivedChat;
+    } catch (e) {
+      throw new Error(e.message);
+    }
+  }
+
+  async editChat(id: number, userId: number, dto: EditChatDto) {
+    const { title, language } = dto;
+
+    const user = await this.prisma.user.findFirst({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const chat = await this.prisma.chat.findFirst({
+      where: {
+        id,
+        userId: user.id,
+      },
+    });
+
+    if (!chat) {
+      throw new UnauthorizedException('Chat not found');
+    }
+
+    const updatedChat = await this.prisma.chat.update({
+      where: {
+        id: chat.id,
+        userId: user.id,
+      },
+      data: {
+        title,
+        language,
+      },
+    });
+
+    try {
+      return updatedChat;
     } catch (e) {
       throw new Error(e.message);
     }
