@@ -34,7 +34,7 @@ export class SpeechToTextService {
       OutputFormat: 'mp3',
       Text: text,
       TextType: 'text',
-      VoiceId: language === 'EN' ? 'Matthew' : 'Tatyana',
+      VoiceId: language === 'EN' ? 'Matthew' : 'Maxim',
     };
 
     const result = await this.polly.synthesizeSpeech(params).promise();
