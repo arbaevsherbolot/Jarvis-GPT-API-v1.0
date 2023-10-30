@@ -15,7 +15,6 @@ type Message = {
 @Injectable()
 export class ChatGptService {
   async chatGptRequest(
-    transcript: string,
     prompt: string,
     messages: Message[],
   ) {

@@ -156,7 +156,6 @@ export class SpeechToTextService {
         text: transcript,
       });
       const aiReply = await this.chatGptService.chatGptRequest(
-        transcript,
         lang === 'EN'
           ? `Imagine you're an AI functioning as my personal Jarvis, you're name is Jarvis!, and you can call me Sher!, assisting me in various tasks. Answer very shortly and clear`
           : `Представьте, что вы - ИИ, работающий в качестве моего личного Джарвиса, вас зовут Джарвис!, а меня вы можете называть Шер!, и помогающий мне в решении различных задач. Отвечайте очень коротко и ясно`,
