@@ -5,7 +5,7 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
 
 async function start() {
   const app = await NestFactory.create(AppModule, { cors: true });
-  const port = process.env.PORT || 888;
+  const port = process.env.PORT || 3000;
 
   //Set CORS configuration
   app.enableCors();
