@@ -13,7 +13,6 @@ import { join } from 'path';
 import { APP_GUARD } from '@nestjs/core';
 import { AccessTokenGuard } from './modules/auth/common/guards';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -41,7 +40,7 @@ import { AppController } from './app.controller';
     PrismaModule,
     ChatModule,
   ],
-  controllers: [AppController],
+  controllers: [],
   providers: [
     {
       provide: APP_GUARD,

@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import { IoAdapter } from '@nestjs/platform-socket.io';
 
 async function start() {
   const app = await NestFactory.create(AppModule, { cors: true });
@@ -15,9 +14,6 @@ async function start() {
 
   //Set the global validation pipes for our server
   app.useGlobalPipes(new ValidationPipe());
-
-  // Use the WebSocket adapter
-  app.useWebSocketAdapter(new IoAdapter(app));
 
   await app.listen(port, () =>
     console.log(`📢 Server starting on: http://localhost:${port}/ ⚡️`),
