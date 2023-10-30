@@ -7,12 +7,14 @@ import {
   JwtModule,
   PrismaModule,
   SpeechToTextModule,
-  ChatModule
+  ChatModule,
 } from './modules';
 import { join } from 'path';
 import { APP_GUARD } from '@nestjs/core';
 import { AccessTokenGuard } from './modules/auth/common/guards';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { AppGateway } from './app.gateway';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -40,12 +42,13 @@ import { MailerModule } from '@nestjs-modules/mailer';
     PrismaModule,
     ChatModule,
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [
     {
       provide: APP_GUARD,
       useClass: AccessTokenGuard,
     },
+    AppGateway,
   ],
 })
 export class AppModule {}

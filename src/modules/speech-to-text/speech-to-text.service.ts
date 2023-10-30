@@ -6,6 +6,7 @@ import { StartRecognitionDto } from './dto/speech-to-text.dto';
 import { Readable } from 'stream';
 import FormData from 'form-data';
 import { getUrl, uploadAudio } from '../../utils/supabase';
+import { transcribe } from '../../utils/whisper';
 import axios from 'axios';
 
 type Languages = 'EN' | 'RU';
@@ -43,6 +44,50 @@ export class SpeechToTextService {
     const audioUrl = getUrl('/audios', path);
 
     return audioUrl;
+  }
+
+  async synthesizeSpeech2(userId: number, text: string) {
+    return new Promise(async (resolve, reject) => {
+      const response = await axios.post(
+        `${process.env.ELEVEN_LABS_API_URL}/text-to-speech/pNInz6obpgDQGcFmaJgB`,
+        {
+          text: text,
+          model_id: 'eleven_multilingual_v2',
+          voice_settings: {
+            stability: 0.8,
+            similarity_boost: 0.7,
+          },
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'xi-api-key': process.env.ELEVEN_LABS_API_KEY,
+            accept: 'audio/mpeg',
+          },
+          responseType: 'stream',
+        },
+      );
+
+      // response.data.pipe(fs.createWriteStream('audio.mp3'));
+
+      const dataBuffer = [];
+
+      response.data.on('data', (chunk) => {
+        dataBuffer.push(chunk);
+      });
+
+      response.data.on('end', async () => {
+        const finalBuffer = Buffer.concat(dataBuffer);
+        const path = await uploadAudio(userId, finalBuffer);
+        const audioUrl = getUrl('/audios', path);
+
+        resolve(audioUrl);
+      });
+
+      response.data.on('error', (error) => {
+        reject(error);
+      });
+    });
   }
 
   async startRecognition(dto: StartRecognitionDto, userId: number, id: number) {
@@ -96,8 +141,6 @@ export class SpeechToTextService {
     const model = 'whisper-1';
     const language = lang === 'EN' ? 'en' : 'ru';
     const format = 'json';
-    const apiKey = process.env.OPEN_AI_SECRET_KEY;
-    const url = process.env.WHISPER_AI_API_URL;
 
     formData.append('model', model);
     formData.append('language', language);
@@ -107,17 +150,8 @@ export class SpeechToTextService {
       contentType: 'audio/webm',
     });
 
-    const config = {
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        //@ts-ignore
-        'Content-Type': `multipart/form-data; boundary=${formData._boundary}`,
-      },
-    };
-
     try {
-      const response = await axios.post(url, formData, config);
-      const transcript = response.data.text;
+      const transcript = await transcribe(formData);
       allMessages.push({
         text: transcript,
       });
@@ -128,7 +162,10 @@ export class SpeechToTextService {
           : `Представьте, что вы - ИИ, работающий в качестве моего личного Джарвиса, вас зовут Джарвис!, а меня вы можете называть Шер!, и помогающий мне в решении различных задач. Отвечайте очень коротко и ясно`,
         allMessages,
       );
-      const audioUrl = await this.synthesizeSpeech(user.id, aiReply, lang);
+      const audioUrl = (await this.synthesizeSpeech2(
+        user.id,
+        aiReply,
+      )) as string;
       const message = await this.prisma.message.create({
         data: {
           chatId: chat.id,
