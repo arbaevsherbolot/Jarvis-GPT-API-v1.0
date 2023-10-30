@@ -13,7 +13,6 @@ import { join } from 'path';
 import { APP_GUARD } from '@nestjs/core';
 import { AccessTokenGuard } from './modules/auth/common/guards';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { AppGateway } from './app.gateway';
 import { AppController } from './app.controller';
 
 @Module({
@@ -48,7 +47,6 @@ import { AppController } from './app.controller';
       provide: APP_GUARD,
       useClass: AccessTokenGuard,
     },
-    AppGateway,
   ],
 })
 export class AppModule {}
