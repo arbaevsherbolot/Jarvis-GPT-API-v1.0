@@ -258,14 +258,18 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    const photoUrl = getUrl('/photos', user.photo);
+    let photoUrl: string = user.photo;
     const regexGooglePicture =
       /https:\/\/lh3\.googleusercontent\.com\/a\/[^\/]+\/[^\/]+=s\d+-c/;
-    const isGooglePicture = regexGooglePicture.test(photoUrl);
+    const isNotGooglePicture = regexGooglePicture.test(user.photo);
+
+    if (isNotGooglePicture) {
+      photoUrl = getUrl('/photos', user.photo);
+    }
 
     const userOptionalParams = {
       ...user,
-      photo: !isGooglePicture ? photoUrl : user.photo,
+      photo: photoUrl,
     };
 
     try {
