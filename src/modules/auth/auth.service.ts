@@ -259,10 +259,13 @@ export class AuthService {
     }
 
     const photoUrl = getUrl('/photos', user.photo);
+    const regexGooglePicture =
+      /https:\/\/lh3\.googleusercontent\.com\/a\/[^\/]+\/[^\/]+=s\d+-c/;
+    const isGooglePicture = regexGooglePicture.test(photoUrl);
 
     const userOptionalParams = {
       ...user,
-      photo: photoUrl,
+      photo: !isGooglePicture ? photoUrl : user.photo,
     };
 
     try {
