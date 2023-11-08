@@ -122,6 +122,12 @@ export class AuthService {
       throw new ForbiddenException('User has been deactivated');
     }
 
+    if (user.password.length === 0) {
+      throw new ConflictException(
+        'User has logged in using another service, such as Google',
+      );
+    }
+
     const comparedPassword = await compare(password, user.password);
 
     if (!comparedPassword) {
