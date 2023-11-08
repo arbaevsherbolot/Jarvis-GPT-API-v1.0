@@ -258,22 +258,8 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    let photoUrl: string = user.photo;
-    const regexGooglePicture =
-      /https:\/\/lh3\.googleusercontent\.com\/a\/[^\/]+\/[^\/]+=s\d+-c/;
-    const isNotGooglePicture = regexGooglePicture.test(user.photo);
-
-    if (isNotGooglePicture) {
-      photoUrl = getUrl('/photos', user.photo);
-    }
-
-    const userOptionalParams = {
-      ...user,
-      photo: photoUrl,
-    };
-
     try {
-      return userOptionalParams;
+      return user;
     } catch (e) {
       throw new Error(e.message);
     }
@@ -326,13 +312,14 @@ export class AuthService {
     }
 
     const path = await uploadPhoto(user.id, file);
+    const url = getUrl('/photos', path);
 
     const updatedUser = await this.prisma.user.update({
       where: {
         id: user.id,
       },
       data: {
-        photo: path,
+        photo: url,
       },
     });
 
