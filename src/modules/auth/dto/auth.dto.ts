@@ -6,6 +6,15 @@ import {
   MinLength,
 } from 'class-validator';
 
+export class googleUserDto {
+  provider: string;
+  providerId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  photo: string;
+}
+
 export class RegisterDto {
   @IsNotEmpty()
   @IsString()

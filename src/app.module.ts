@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ServeStaticModule } from '@nestjs/serve-static';
 import {
   AuthModule,
   ChatGptModule,
@@ -9,16 +8,13 @@ import {
   SpeechToTextModule,
   ChatModule,
 } from './modules';
-import { join } from 'path';
 import { APP_GUARD } from '@nestjs/core';
 import { AccessTokenGuard } from './modules/auth/common/guards';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { GoogleStrategy } from './modules/auth/strategies';
 
 @Module({
   imports: [
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'),
-    }),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
@@ -46,6 +42,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
       provide: APP_GUARD,
       useClass: AccessTokenGuard,
     },
+    GoogleStrategy,
   ],
 })
 export class AppModule {}

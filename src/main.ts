@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import * as cookieParser from 'cookie-parser';
 
 async function start() {
   const app = await NestFactory.create(AppModule, { cors: true });
@@ -14,6 +15,9 @@ async function start() {
 
   //Set the global validation pipes for our server
   app.useGlobalPipes(new ValidationPipe());
+
+  //Set the Cookie Parser
+  app.use(cookieParser());
 
   await app.listen(port, () =>
     console.log(`📢 Server starting on: http://localhost:${port}/ ⚡️`),

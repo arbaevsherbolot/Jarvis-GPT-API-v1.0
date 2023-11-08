@@ -4,9 +4,10 @@ import { ChatGptService } from '../chat-gpt/chat-gpt.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { StartRecognitionDto } from './dto/speech-to-text.dto';
 import { Readable } from 'stream';
-import FormData from 'form-data';
+import * as FormData from 'form-data';
 import { transcribe } from '../../utils/whisper';
-import { getUrl, uploadAudio } from '../../utils/supabase';
+import { synthesizeSpeech } from '../../utils/synthesize';
+// import { getUrl, uploadAudio } from '../../utils/supabase';
 
 type Languages = 'EN' | 'RU';
 
@@ -29,21 +30,21 @@ export class SpeechToTextService {
     this.polly = new AWS.Polly();
   }
 
-  async synthesizeSpeech(userId: number, text: string, language: Languages) {
-    const params: AWS.Polly.Types.SynthesizeSpeechInput = {
-      OutputFormat: 'mp3',
-      Text: text,
-      TextType: 'text',
-      VoiceId: language === 'EN' ? 'Matthew' : 'Maxim',
-    };
+  // async synthesizeSpeech(userId: number, text: string, language: Languages) {
+  //   const params: AWS.Polly.Types.SynthesizeSpeechInput = {
+  //     OutputFormat: 'mp3',
+  //     Text: text,
+  //     TextType: 'text',
+  //     VoiceId: language === 'EN' ? 'Matthew' : 'Maxim',
+  //   };
 
-    const result = await this.polly.synthesizeSpeech(params).promise();
-    const audioBuffer = result.AudioStream as Buffer;
-    const path = await uploadAudio(userId, audioBuffer);
-    const audioUrl = getUrl('/audios', path);
+  //   const result = await this.polly.synthesizeSpeech(params).promise();
+  //   const audioBuffer = result.AudioStream as Buffer;
+  //   const path = await uploadAudio(userId, audioBuffer);
+  //   const audioUrl = getUrl('/audios', path);
 
-    return audioUrl;
-  }
+  //   return audioUrl;
+  // }
 
   async startRecognition(dto: StartRecognitionDto, userId: number, id: number) {
     const { audio: base64Audio } = dto;
@@ -116,7 +117,7 @@ export class SpeechToTextService {
           : `Представьте, что вы - ИИ, работающий в качестве моего личного Джарвиса, вас зовут Джарвис!, а меня вы можете называть Шер!, и помогающий мне в решении различных задач. Отвечайте очень коротко и ясно`,
         allMessages,
       );
-      const audioUrl = await this.synthesizeSpeech(user.id, aiReply, lang);
+      const audioUrl = await synthesizeSpeech(user.id, aiReply);
       const message = await this.prisma.message.create({
         data: {
           chatId: chat.id,

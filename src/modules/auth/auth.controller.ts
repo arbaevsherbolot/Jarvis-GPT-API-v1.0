@@ -9,6 +9,8 @@ import {
   Put,
   UseInterceptors,
   UploadedFile,
+  Req,
+  Res,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthService } from './auth.service';
@@ -19,12 +21,32 @@ import {
   ForgotPasswordDto,
   ResetPasswordDto,
 } from './dto';
-import { RefreshTokenGuard } from './common/guards';
+import { GoogleOauthGuard, RefreshTokenGuard } from './common/guards';
 import { GetCurrentUser, GetCurrentUserId, Public } from './common/decorators';
+import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
+
+  @Public()
+  @Get('google/callback')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(GoogleOauthGuard)
+  async googleCallback(
+    @Req() req,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const { tokens } = await this.authService.googleAuth(req.user);
+
+    //@ts-ignore
+    response.cookie('access_token', tokens.access_token);
+    //@ts-ignore
+    response.json({
+      status: HttpStatus.OK,
+      message: 'Successfully authenticated!',
+    });
+  }
 
   @Public()
   @Post('register')

@@ -17,7 +17,8 @@ import {
   EditProfileDto,
   ForgotPasswordDto,
   ResetPasswordDto,
-} from './dto/auth.dto';
+  googleUserDto,
+} from './dto';
 
 @Injectable()
 export class AuthService {
@@ -26,6 +27,44 @@ export class AuthService {
     private jwt: JwtService,
     private readonly mailerService: MailerService,
   ) {}
+
+  async googleAuth(dto: googleUserDto) {
+    const { firstName, lastName, email, photo } = dto;
+
+    const existUser = await this.prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    if (existUser) {
+      const tokens = await this.jwt.generateTokens(existUser.id);
+      await this.updateRefreshTokenHash(existUser.id, tokens.refresh_token);
+
+      return {
+        tokens,
+      };
+    }
+
+    const data: RegisterSchema = {
+      firstName,
+      lastName,
+      email,
+      photo,
+      password: '',
+    };
+
+    const newUser = await this.prisma.user.create({
+      data,
+    });
+
+    const tokens = await this.jwt.generateTokens(newUser.id);
+    await this.updateRefreshTokenHash(newUser.id, tokens.refresh_token);
+
+    return {
+      tokens,
+    };
+  }
 
   async register(dto: RegisterDto) {
     const { firstName, lastName, email, password } = dto;
