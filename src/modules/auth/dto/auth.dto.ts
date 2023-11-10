@@ -7,11 +7,28 @@ import {
 } from 'class-validator';
 
 export class googleUserDto {
+  @IsNotEmpty()
+  @IsString()
   provider: string;
+
+  @IsNotEmpty()
+  @IsString()
   providerId: string;
+
+  @IsNotEmpty()
+  @IsString()
   email: string;
+
+  @IsNotEmpty()
+  @IsString()
   firstName: string;
+
+  @IsNotEmpty()
+  @IsString()
   lastName: string;
+
+  @IsNotEmpty()
+  @IsString()
   photo: string;
 }
 
