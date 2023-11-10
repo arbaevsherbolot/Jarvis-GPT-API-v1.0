@@ -19,7 +19,7 @@ export class ChatGptService {
     messages: Message[],
   ) {
     const data = {
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4',
       messages: [
         {
           role: 'system',

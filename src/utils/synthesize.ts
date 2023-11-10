@@ -2,22 +2,21 @@ import axios from 'axios';
 import { getUrl, uploadAudio } from './supabase';
 
 export const synthesizeSpeech = async (userId: number, text: string) => {
+  const apiKey = process.env.OPEN_AI_SECRET_KEY;
+  const apiUrl = process.env.TTS_AI_API_URL;
+
   return new Promise(async (resolve, reject) => {
     const response = await axios.post(
-      `${process.env.ELEVEN_LABS_API_URL}/text-to-speech/${process.env.ELEVEN_LABS_VOICE_ID}/stream`,
+      `${apiUrl}`,
       {
-        text,
-        model_id: process.env.ELEVEN_LABS_MODEL_ID,
-        voice_settings: {
-          stability: 0.8,
-          similarity_boost: 0.7,
-        },
+        input: text,
+        model: 'tts-1-hd',
+        voice: 'echo',
       },
       {
         headers: {
           'Content-Type': 'application/json',
-          'xi-api-key': process.env.ELEVEN_LABS_API_KEY,
-          accept: 'audio/mpeg',
+          Authorization: `Bearer ${apiKey}`,
         },
         responseType: 'stream',
       },
