@@ -1,5 +1,7 @@
 import { Injectable, ServiceUnavailableException } from '@nestjs/common';
-import axios from 'axios';
+import OpenAIApi from 'openai';
+import { ChatCompletion, ChatCompletionMessageParam } from 'openai/resources';
+import { getUrl, uploadAudio } from '../../utils/supabase';
 
 type Message = {
   id: number;
@@ -14,39 +16,90 @@ type Message = {
 
 @Injectable()
 export class ChatGptService {
-  async chatGptRequest(
-    prompt: string,
-    messages: Message[],
-  ) {
-    const data = {
-      model: 'gpt-4',
-      messages: [
-        {
-          role: 'system',
-          content: prompt,
-        },
-        ...messages.map((message) => ({
+  public openai: OpenAIApi;
+
+  constructor() {
+    this.openai = new OpenAIApi({
+      apiKey: process.env.OPEN_AI_SECRET_KEY,
+    });
+  }
+
+  async chatGptRequest(prompt: string, messages: Message[]): Promise<string> {
+    try {
+      const history = messages.map(
+        (message): ChatCompletionMessageParam => ({
           role: message.ai ? 'assistant' : 'user',
           content: message.text,
-        })),
-      ],
-      temperature: 0.5,
-      max_tokens: 1000,
-    };
+        }),
+      );
 
-    const headers = {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${process.env.OPEN_AI_SECRET_KEY}`,
-    };
+      const completion: ChatCompletion =
+        await this.openai.chat.completions.create({
+          model: 'gpt-4',
+          messages: [
+            {
+              role: 'system',
+              content: prompt,
+            },
+            ...history,
+          ],
+          temperature: 0.5,
+          max_tokens: 1000,
+        });
+
+      const [content] = completion.choices.map(
+        (choice) => choice.message.content,
+      );
+
+      return content;
+    } catch (e) {
+      console.error(e);
+      throw new ServiceUnavailableException('Failed request to ChatGPT');
+    }
+  }
+
+  async synthesizeSpeech(userId: number, text: string): Promise<string> {
+    try {
+      const ttsResponse = await this.openai.audio.speech.create({
+        input: text,
+        model: 'tts-1-hd',
+        voice: 'alloy',
+      });
+
+      const arrayBuffer = await ttsResponse.arrayBuffer();
+      const audioBuffer = Buffer.from(arrayBuffer);
+
+      const path = await uploadAudio(userId, audioBuffer);
+      const audioUrl = getUrl('/audios', path);
+
+      return audioUrl;
+    } catch (e) {
+      console.error(e);
+      throw new ServiceUnavailableException('Failed to synthesize speech');
+    }
+  }
+
+  async transcribeAudio(
+    audioBuffer: Buffer,
+    language: string,
+  ): Promise<string> {
+    const blob = new Blob([audioBuffer], {
+      type: 'audio/wav',
+    });
+    const file = new File([blob], 'input.wav', { type: 'audio/wav' });
 
     try {
-      const response = await axios.post(process.env.OPEN_AI_MODEL_URL, data, {
-        headers,
+      const whisperResponse = await this.openai.audio.transcriptions.create({
+        model: 'whisper-1',
+        language,
+        file,
+        response_format: 'json',
       });
-      const aiReply = response.data.choices[0].message.content;
-      return aiReply;
-    } catch {
-      throw new ServiceUnavailableException('Failed request to ChatGPT');
+
+      return whisperResponse.text;
+    } catch (e) {
+      console.error(e);
+      throw new ServiceUnavailableException('Failed to transcribe audio');
     }
   }
 }

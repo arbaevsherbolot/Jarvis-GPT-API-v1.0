@@ -1,8 +1,9 @@
 import { BadRequestException } from '@nestjs/common';
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_API_KEY;
+const supabaseUrl = 'https://cqyhpkpfgerxvsbdnguj.supabase.co';
+const supabaseKey =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxeWhwa3BmZ2VyeHZzYmRuZ3VqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY5ODA3NjczMiwiZXhwIjoyMDEzNjUyNzMyfQ.tS6y3AQv1MTYGVtQ2PTFQ9sboyFebuD1KcRFP_RpulY';
 
 const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {

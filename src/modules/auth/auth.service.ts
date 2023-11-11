@@ -46,12 +46,14 @@ export class AuthService {
       };
     }
 
+    const hashedPassword = await hash('wedevx2023');
+
     const data: RegisterSchema = {
       firstName,
       lastName,
       email,
       photo,
-      password: '',
+      password: hashedPassword,
     };
 
     const newUser = await this.prisma.user.create({
