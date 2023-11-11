@@ -5,23 +5,19 @@ import {
 } from '@nestjs/common';
 import { CreateChatDto, EditChatDto } from './dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class ChatService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private userService: UserService,
+  ) {}
 
   async createChat(dto: CreateChatDto, userId: number) {
     const { title, language } = dto;
 
-    const user = await this.prisma.user.findFirst({
-      where: {
-        id: userId,
-      },
-    });
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
+    const user = await this.userService.getUser(userId);
 
     const existChat = await this.prisma.chat.findFirst({
       where: {
@@ -51,15 +47,7 @@ export class ChatService {
   }
 
   async getChats(userId: number) {
-    const user = await this.prisma.user.findFirst({
-      where: {
-        id: userId,
-      },
-    });
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
+    const user = await this.userService.getUser(userId);
 
     const allChats = await this.prisma.chat.findMany({
       where: {
@@ -76,15 +64,7 @@ export class ChatService {
   }
 
   async getChat(id: number, userId: number) {
-    const user = await this.prisma.user.findFirst({
-      where: {
-        id: userId,
-      },
-    });
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
+    const user = await this.userService.getUser(userId);
 
     const chat = await this.prisma.chat.findFirst({
       where: {
@@ -106,15 +86,7 @@ export class ChatService {
   }
 
   async archiveChat(id: number, userId: number) {
-    const user = await this.prisma.user.findFirst({
-      where: {
-        id: userId,
-      },
-    });
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
+    const user = await this.userService.getUser(userId);
 
     const chat = await this.prisma.chat.findFirst({
       where: {
@@ -147,15 +119,7 @@ export class ChatService {
   async editChat(id: number, userId: number, dto: EditChatDto) {
     const { title, language } = dto;
 
-    const user = await this.prisma.user.findFirst({
-      where: {
-        id: userId,
-      },
-    });
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
+    const user = await this.userService.getUser(userId);
 
     const chat = await this.prisma.chat.findFirst({
       where: {

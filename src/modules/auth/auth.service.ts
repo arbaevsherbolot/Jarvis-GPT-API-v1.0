@@ -19,6 +19,7 @@ import {
   ResetPasswordDto,
   googleUserDto,
 } from './dto';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class AuthService {
@@ -26,6 +27,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwt: JwtService,
     private readonly mailerService: MailerService,
+    private userService: UserService,
   ) {}
 
   async googleAuth(dto: googleUserDto) {
@@ -110,19 +112,7 @@ export class AuthService {
   async login(dto: LoginDto) {
     const { emailOrName, password } = dto;
 
-    const user = await this.prisma.user.findFirst({
-      where: {
-        OR: [{ email: emailOrName }, { firstName: emailOrName }],
-      },
-    });
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-
-    if (!user.isActive) {
-      throw new ForbiddenException('User has been deactivated');
-    }
+    const user = await this.userService.findByEmailOrName(emailOrName);
 
     if (user.password.length === 0) {
       throw new ConflictException(
@@ -152,19 +142,7 @@ export class AuthService {
   async forgotPassword(dto: ForgotPasswordDto) {
     const { email } = dto;
 
-    const user = await this.prisma.user.findUnique({
-      where: {
-        email,
-      },
-    });
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-
-    if (!user.isActive) {
-      throw new ForbiddenException('User has been deactivated');
-    }
+    const user = await this.userService.findByEmail(email);
 
     const token = await this.jwt.generateResetPasswordSecret(user.id);
     const forgotLink = `${process.env.CLIENT_APP_URL}/password/reset/?token=${token}`;
@@ -223,15 +201,7 @@ export class AuthService {
   }
 
   async logout(userId: number) {
-    const user = await this.prisma.user.findFirst({
-      where: {
-        id: userId,
-      },
-    });
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
+    const user = await this.userService.getUser(userId);
 
     try {
       if (user.refreshToken !== null) {
@@ -250,15 +220,7 @@ export class AuthService {
   }
 
   async getProfile(userId: number) {
-    const user = await this.prisma.user.findFirst({
-      where: {
-        id: userId,
-      },
-    });
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
+    const user = await this.userService.getUser(userId);
 
     try {
       return user;
@@ -270,15 +232,7 @@ export class AuthService {
   async editProfile(userId: number, dto: EditProfileDto) {
     const { firstName, lastName, bio } = dto;
 
-    const user = await this.prisma.user.findFirst({
-      where: {
-        id: userId,
-      },
-    });
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
+    const user = await this.userService.getUser(userId);
 
     const updatedUser = await this.prisma.user.update({
       where: {
@@ -299,18 +253,10 @@ export class AuthService {
   }
 
   async uploadPhoto(userId: number, file: Express.Multer.File) {
-    const user = await this.prisma.user.findFirst({
-      where: {
-        id: userId,
-      },
-    });
+    const user = await this.userService.getUser(userId);
 
     if (!file) {
       throw new NotFoundException('File not found');
-    }
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
     }
 
     const path = await uploadPhoto(user.id, file);
@@ -333,15 +279,7 @@ export class AuthService {
   }
 
   async refreshToken(userId: number, token: string) {
-    const user = await this.prisma.user.findFirst({
-      where: {
-        id: userId,
-      },
-    });
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
+    const user = await this.userService.getUser(userId);
 
     let comparedToken: boolean;
 

@@ -1,7 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { ChatGptService } from '../chat-gpt/chat-gpt.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { StartRecognitionDto } from './dto/speech-to-text.dto';
+import { UserService } from '../user/user.service';
+import { Response } from 'express';
 
 type Languages = 'EN' | 'RU';
 
@@ -10,6 +12,7 @@ export class SpeechToTextService {
   constructor(
     private chatGptService: ChatGptService,
     private prisma: PrismaService,
+    private userService: UserService,
   ) {}
 
   async startRecognition(dto: StartRecognitionDto, userId: number, id: number) {
@@ -17,25 +20,20 @@ export class SpeechToTextService {
     const audioData = Buffer.from(base64Audio, 'base64');
     const allMessages = [];
 
-    const user = await this.prisma.user.findFirst({
-      where: {
-        id: userId,
-      },
-    });
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
+    const user = await this.userService.getUser(userId);
 
     const chat = await this.prisma.chat.findFirst({
       where: {
         id,
         userId: user.id,
       },
+      include: {
+        messages: true,
+      },
     });
 
     if (!chat) {
-      throw new UnauthorizedException('Chat not found');
+      throw new BadRequestException('Chat not found');
     }
 
     let lang: Languages = 'EN';
@@ -43,15 +41,8 @@ export class SpeechToTextService {
       lang = 'RU';
     }
 
-    const messages = await this.prisma.message.findMany({
-      where: {
-        userId: user.id,
-        chatId: chat.id,
-      },
-    });
-
-    if (messages.length > 0) {
-      allMessages.push(...messages);
+    if (chat.messages.length > 0) {
+      allMessages.push(...chat.messages);
     }
 
     try {
@@ -62,16 +53,27 @@ export class SpeechToTextService {
       allMessages.push({
         text: transcript,
       });
+
+      console.log(`
+      YOU (transcript): ${transcript}
+      `);
+
       const aiReply = await this.chatGptService.chatGptRequest(
         lang === 'EN'
           ? `Imagine you're an AI functioning as my personal Jarvis, you're name is Jarvis!, and you can call me Sher!, assisting me in various tasks. Answer very shortly and clear, you're reply limit is 1000 characters`
           : `Представьте, что вы - ИИ, работающий в качестве моего личного Джарвиса, вас зовут Джарвис!, а меня вы можете называть Шер!, и помогающий мне в решении различных задач. Отвечайте очень коротко и ясно, ограничение на ответ - 1000 символов`,
         allMessages,
       );
+
+      console.log(`
+      AI (GPT-4): ${aiReply}
+       `);
+
       const audioUrl = await this.chatGptService.synthesizeSpeech(
         user.id,
         aiReply,
       );
+
       const message = await this.prisma.message.create({
         data: {
           chatId: chat.id,
@@ -80,6 +82,7 @@ export class SpeechToTextService {
           audioSource: audioUrl as string,
         },
       });
+
       const reply = await this.prisma.message.create({
         data: {
           chatId: chat.id,
@@ -101,36 +104,24 @@ export class SpeechToTextService {
   }
 
   async getMessages(id: number, userId: number) {
-    const user = await this.prisma.user.findFirst({
-      where: {
-        id: userId,
-      },
-    });
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
+    const user = await this.userService.getUser(userId);
 
     const chat = await this.prisma.chat.findFirst({
       where: {
         id,
         userId: user.id,
       },
-    });
-
-    if (!chat) {
-      throw new UnauthorizedException('Chat not found');
-    }
-
-    const messages = await this.prisma.message.findMany({
-      where: {
-        userId: user.id,
-        chatId: chat.id,
+      include: {
+        messages: true,
       },
     });
 
+    if (!chat) {
+      throw new BadRequestException('Chat not found');
+    }
+
     try {
-      return messages;
+      return chat.messages;
     } catch (e) {
       throw new Error(e.message);
     }

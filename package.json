@@ -46,7 +46,8 @@
     "openai": "^4.17.4",
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^7.8.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",

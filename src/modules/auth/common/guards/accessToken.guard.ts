@@ -12,7 +12,7 @@ export class AccessTokenGuard extends AuthGuard('jwt') {
     super();
   }
 
-  canActivate(context: ExecutionContext) {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const isPublic = this.reflector.getAllAndOverride('isPublic', [
       context.getHandler(),
       context.getClass(),
@@ -32,7 +32,8 @@ export class AccessTokenGuard extends AuthGuard('jwt') {
 
     try {
       request.headers.authorization = `Bearer ${token}`;
-      return super.canActivate(context);
+      const canActivateSuper = await super.canActivate(context);
+      return canActivateSuper as boolean;
     } catch (e) {
       if (e.name === 'TokenExpiredError') {
         throw new UnauthorizedException('Token has expired');

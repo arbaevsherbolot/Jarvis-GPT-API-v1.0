@@ -39,9 +39,7 @@ export class AuthController {
   ) {
     const { tokens } = await this.authService.googleAuth(req.user);
 
-    //@ts-ignore
     response.cookie('access_token', tokens.access_token);
-    //@ts-ignore
     response.json({
       status: HttpStatus.OK,
       message: 'Successfully authenticated!',

@@ -59,7 +59,7 @@ model Chat {
   userId    Int
   user      User      @relation(fields: [userId], references: [id])
   title     String
-  mesages   Message[]
+  messages   Message[]
   language  Languages @default(EN)
   isActive  Boolean   @default(true)
   createdAt DateTime  @default(now())
