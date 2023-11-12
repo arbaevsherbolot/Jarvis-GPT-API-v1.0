@@ -2,7 +2,6 @@ import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import OpenAIApi from 'openai';
 import { ChatCompletion, ChatCompletionMessageParam } from 'openai/resources';
 import { getUrl, uploadAudio } from '../../utils/supabase';
-import { File } from 'openai/_shims/web-types';
 
 type Message = {
   id: number;
@@ -18,9 +17,9 @@ type Message = {
 @Injectable()
 export class ChatGptService {
   public openai: OpenAIApi;
-  public file: File;
 
   constructor() {
+    
     this.openai = new OpenAIApi({
       apiKey: process.env.OPEN_AI_SECRET_KEY,
     });
@@ -88,13 +87,13 @@ export class ChatGptService {
     const blob = new Blob([audioBuffer], {
       type: 'audio/wav',
     });
-    this.file = new File([blob], 'input.wav', { type: 'audio/wav' });
+    const file = new File([blob], 'input.wav', { type: 'audio/wav' });
 
     try {
       const whisperResponse = await this.openai.audio.transcriptions.create({
         model: 'whisper-1',
         language,
-        file: this.file,
+        file,
         response_format: 'json',
       });
 
