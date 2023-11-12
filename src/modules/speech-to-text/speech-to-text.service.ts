@@ -66,7 +66,7 @@ export class SpeechToTextService {
       );
 
       console.log(`
-      AI (GPT-4): ${aiReply}
+      AI (GPT-4): ${aiReply.toString().trim()}
        `);
 
       const audioUrl = await this.chatGptService.synthesizeSpeech(
@@ -87,7 +87,7 @@ export class SpeechToTextService {
         data: {
           chatId: chat.id,
           userId: user.id,
-          text: aiReply,
+          text: aiReply.toString().trim(),
           ai: true,
         },
       });
