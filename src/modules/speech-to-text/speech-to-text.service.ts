@@ -3,7 +3,6 @@ import { ChatGptService } from '../chat-gpt/chat-gpt.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { StartRecognitionDto } from './dto/speech-to-text.dto';
 import { UserService } from '../user/user.service';
-import { Response } from 'express';
 
 type Languages = 'EN' | 'RU';
 
