@@ -2,6 +2,7 @@ import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import OpenAIApi from 'openai';
 import { ChatCompletion, ChatCompletionMessageParam } from 'openai/resources';
 import { getUrl, uploadAudio } from '../../utils/supabase';
+import { File } from '@web-std/file';
 
 type Message = {
   id: number;
@@ -19,7 +20,6 @@ export class ChatGptService {
   public openai: OpenAIApi;
 
   constructor() {
-    
     this.openai = new OpenAIApi({
       apiKey: process.env.OPEN_AI_SECRET_KEY,
     });
