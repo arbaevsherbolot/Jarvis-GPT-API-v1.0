@@ -18,6 +18,7 @@ type Message = {
 @Injectable()
 export class ChatGptService {
   public openai: OpenAIApi;
+  public file: File;
 
   constructor() {
     this.openai = new OpenAIApi({
@@ -87,13 +88,13 @@ export class ChatGptService {
     const blob = new Blob([audioBuffer], {
       type: 'audio/wav',
     });
-    const file = new File([blob], 'input.wav', { type: 'audio/wav' });
+    this.file = new File([blob], 'input.wav', { type: 'audio/wav' });
 
     try {
       const whisperResponse = await this.openai.audio.transcriptions.create({
         model: 'whisper-1',
         language,
-        file,
+        file: this.file,
         response_format: 'json',
       });
 
