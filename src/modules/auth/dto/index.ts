@@ -5,4 +5,5 @@ export {
   ResetPasswordDto,
   EditProfileDto,
   googleUserDto,
+  requestToLoginDto
 } from './auth.dto';

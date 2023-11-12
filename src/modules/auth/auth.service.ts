@@ -10,7 +10,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '../jwt/jwt.service';
 import { hash } from '../../utils/bcrypt';
 import { RegisterSchema } from './auth.schema';
-import { LoginDto, RegisterDto } from './dto';
+import { LoginDto, RegisterDto, requestToLoginDto } from './dto';
 import { compare } from 'bcrypt';
 import { getUrl, uploadPhoto } from '../../utils/supabase';
 import {
@@ -134,6 +134,32 @@ export class AuthService {
         user,
         tokens,
       };
+    } catch (e) {
+      throw new Error(e.message);
+    }
+  }
+
+  async requestToLogin(dto: requestToLoginDto) {
+    const { emailOrName } = dto;
+
+    const user = await this.userService.findByEmailOrName(emailOrName);
+    const dbUser = await this.prisma.user.findUnique({
+      where: {
+        email: user.email,
+      },
+      select: {
+        firstName: true,
+        lastName: true,
+        email: true,
+        photo: true,
+        phone: true,
+        bio: true,
+        isVerified: true,
+      },
+    });
+
+    try {
+      return dbUser;
     } catch (e) {
       throw new Error(e.message);
     }

@@ -20,6 +20,7 @@ import {
   EditProfileDto,
   ForgotPasswordDto,
   ResetPasswordDto,
+  requestToLoginDto,
 } from './dto';
 import { GoogleOauthGuard, RefreshTokenGuard } from './common/guards';
 import { GetCurrentUser, GetCurrentUserId, Public } from './common/decorators';
@@ -51,6 +52,13 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   async register(@Body() dto: RegisterDto) {
     return await this.authService.register(dto);
+  }
+
+  @Public()
+  @Post('requestToLogin')
+  @HttpCode(HttpStatus.OK)
+  async requestToLogin(@Body() dto: requestToLoginDto) {
+    return await this.authService.requestToLogin(dto);
   }
 
   @Public()

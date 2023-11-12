@@ -60,6 +60,12 @@ export class LoginDto {
   password: string;
 }
 
+export class requestToLoginDto {
+  @IsNotEmpty()
+  @IsString()
+  emailOrName: string;
+}
+
 export class ForgotPasswordDto {
   @IsNotEmpty()
   @IsEmail()
