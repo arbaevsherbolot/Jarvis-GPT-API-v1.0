@@ -2,7 +2,7 @@ import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import OpenAIApi from 'openai';
 import { ChatCompletion, ChatCompletionMessageParam } from 'openai/resources';
 import { getUrl, uploadAudio } from '../../utils/supabase';
-import { File } from 'openai/_shims/auto/types';
+import { File } from 'openai/_shims';
 
 type Message = {
   id: number;
