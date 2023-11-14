@@ -59,9 +59,21 @@ model Chat {
   userId    Int
   user      User      @relation(fields: [userId], references: [id])
   title     String
-  messages   Message[]
+  messages  Message[]
   language  Languages @default(EN)
   isActive  Boolean   @default(true)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  images    Image[]
+}
+
+model Image {
+  id          Int      @id @default(autoincrement())
+  chatId      Int
+  chat        Chat     @relation(fields: [chatId], references: [id])
+  url         String
+  text        String
+  output      String
+  audioSource String?
+  createdAt   DateTime @default(now())
 }
