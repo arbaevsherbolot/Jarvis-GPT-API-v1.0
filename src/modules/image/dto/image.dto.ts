@@ -7,3 +7,11 @@ export class newImageDto {
   @MinLength(10)
   text: string;
 }
+
+export class generateImageDto {
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(1000)
+  @MinLength(3)
+  text: string;
+}

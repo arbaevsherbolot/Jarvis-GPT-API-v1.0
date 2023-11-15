@@ -131,4 +131,19 @@ export class ChatGptService {
       throw new ServiceUnavailableException('Unable to recognize image');
     }
   }
+
+  async generateImage(text: string): Promise<string> {
+    try {
+      const { data } = await this.openai.images.generate({
+        model: 'dall-e-3',
+        prompt: text,
+        response_format: 'url',
+      });
+
+      return data[0].url;
+    } catch (e) {
+      console.error(e);
+      throw new ServiceUnavailableException('Failed to generate image');
+    }
+  }
 }

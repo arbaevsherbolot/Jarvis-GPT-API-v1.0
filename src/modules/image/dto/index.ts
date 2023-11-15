@@ -1,1 +1,1 @@
-export { newImageDto } from './image.dto';
+export { newImageDto, generateImageDto } from './image.dto';

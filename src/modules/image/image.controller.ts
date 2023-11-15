@@ -12,7 +12,7 @@ import {
 import { ImageService } from './image.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { GetCurrentUserId } from '../auth/common/decorators';
-import { newImageDto } from './dto';
+import { newImageDto, generateImageDto } from './dto';
 
 @Controller('image')
 export class ImageController {
@@ -28,5 +28,15 @@ export class ImageController {
     @Param('id', ParseIntPipe) id: number,
   ) {
     return await this.imageService.newImage(id, userId, file, dto);
+  }
+
+  @Post(':id/generate')
+  @HttpCode(HttpStatus.OK)
+  async generateImage(
+    @GetCurrentUserId() userId: number,
+    @Body() dto: generateImageDto,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return await this.imageService.generateImage(id, userId, dto);
   }
 }

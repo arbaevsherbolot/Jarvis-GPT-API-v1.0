@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { ChatGptService } from '../chat-gpt/chat-gpt.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserService } from '../user/user.service';
-import { newImageDto } from './dto';
+import { generateImageDto, newImageDto } from './dto';
 import { getUrl, uploadPhoto } from '../../utils/supabase';
 
 @Injectable()
@@ -58,6 +58,30 @@ export class ImageService {
 
     try {
       return image;
+    } catch (e) {
+      throw new Error(e.message);
+    }
+  }
+
+  async generateImage(id: number, userId: number, dto: generateImageDto) {
+    const { text } = dto;
+
+    const user = await this.userService.getUser(userId);
+
+    const chat = await this.prisma.chat.findFirst({
+      where: {
+        id,
+      },
+    });
+
+    if (!chat) {
+      throw new NotFoundException('Chat not found');
+    }
+
+    const url = await this.chatGptService.generateImage(text);
+
+    try {
+      return url;
     } catch (e) {
       throw new Error(e.message);
     }
