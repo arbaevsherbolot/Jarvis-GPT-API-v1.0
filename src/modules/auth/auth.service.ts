@@ -188,7 +188,7 @@ export class AuthService {
       subject: 'Password reset',
       html: `
           <h2>Hey ${user.firstName}</h2>
-          <p>To recover your password, please use this <a href="${forgotLink}">link</a>.</p>
+          <p>To recover your password, please use this <a target="_self" href="${forgotLink}">link</a>.</p>
       `,
     });
 
