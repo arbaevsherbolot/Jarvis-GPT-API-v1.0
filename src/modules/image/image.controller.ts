@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Param,
@@ -28,6 +29,21 @@ export class ImageController {
     @Param('id', ParseIntPipe) id: number,
   ) {
     return await this.imageService.newImage(id, userId, file, dto);
+  }
+
+  @Get(':id')
+  @HttpCode(HttpStatus.OK)
+  async getImage(
+    @GetCurrentUserId() userId: number,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return await this.imageService.getImage(id, userId);
+  }
+
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  async getImages(@GetCurrentUserId() userId: number) {
+    return await this.imageService.getImages(userId);
   }
 
   @Post(':id/generate')

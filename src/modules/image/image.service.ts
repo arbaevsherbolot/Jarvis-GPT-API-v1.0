@@ -63,10 +63,46 @@ export class ImageService {
     }
   }
 
+  async getImage(id: number, userId: number) {
+    await this.userService.getUser(userId);
+
+    const image = await this.prisma.image.findFirst({
+      where: {
+        id,
+      },
+    });
+
+    if (!image) {
+      throw new NotFoundException('Image not found');
+    }
+
+    try {
+      return image;
+    } catch (e) {
+      throw new Error(e.message);
+    }
+  }
+
+  async getImages(userId: number) {
+    await this.userService.getUser(userId);
+
+    const images = await this.prisma.image.findMany();
+
+    if (!images) {
+      throw new NotFoundException('Images not found');
+    }
+
+    try {
+      return images;
+    } catch (e) {
+      throw new Error(e.message);
+    }
+  }
+
   async generateImage(id: number, userId: number, dto: generateImageDto) {
     const { text } = dto;
 
-    const user = await this.userService.getUser(userId);
+    await this.userService.getUser(userId);
 
     const chat = await this.prisma.chat.findFirst({
       where: {
