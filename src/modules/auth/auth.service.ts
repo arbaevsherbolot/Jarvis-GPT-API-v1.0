@@ -105,6 +105,7 @@ export class AuthService {
         tokens,
       };
     } catch (e) {
+      console.error(e);
       throw new Error(e.message);
     }
   }
@@ -135,6 +136,7 @@ export class AuthService {
         tokens,
       };
     } catch (e) {
+      console.error(e);
       throw new Error(e.message);
     }
   }
@@ -161,6 +163,7 @@ export class AuthService {
     try {
       return dbUser;
     } catch (e) {
+      console.error(e);
       throw new Error(e.message);
     }
   }
@@ -195,6 +198,7 @@ export class AuthService {
     try {
       return `Password reset link sent to ${user.email}`;
     } catch (e) {
+      console.error(e);
       throw new Error(e.message);
     }
   }
@@ -222,6 +226,7 @@ export class AuthService {
     try {
       return `User password: ${user.email} successfully updated`;
     } catch (e) {
+      console.error(e);
       throw new Error(e.message);
     }
   }
@@ -241,6 +246,7 @@ export class AuthService {
         });
       }
     } catch (e) {
+      console.error(e);
       throw new Error(e.message);
     }
   }
@@ -251,6 +257,7 @@ export class AuthService {
     try {
       return user;
     } catch (e) {
+      console.error(e);
       throw new Error(e.message);
     }
   }
@@ -274,6 +281,7 @@ export class AuthService {
     try {
       return updatedUser;
     } catch (e) {
+      console.error(e);
       throw new Error(e.message);
     }
   }
@@ -300,6 +308,7 @@ export class AuthService {
     try {
       return updatedUser.photo;
     } catch (e) {
+      console.error(e);
       throw new Error(e.message);
     }
   }
@@ -323,6 +332,7 @@ export class AuthService {
     try {
       return tokens;
     } catch (e) {
+      console.error(e);
       throw new Error(e.message);
     }
   }
@@ -340,6 +350,7 @@ export class AuthService {
         },
       });
     } catch (e) {
+      console.error(e);
       throw new Error(e.message);
     }
   }

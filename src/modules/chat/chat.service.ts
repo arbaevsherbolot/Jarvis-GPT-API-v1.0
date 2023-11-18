@@ -42,6 +42,7 @@ export class ChatService {
     try {
       return newChat;
     } catch (e) {
+      console.error(e);
       throw new Error(e.message);
     }
   }
@@ -59,6 +60,7 @@ export class ChatService {
     try {
       return allChats;
     } catch (e) {
+      console.error(e);
       throw new Error(e.message);
     }
   }
@@ -81,6 +83,7 @@ export class ChatService {
     try {
       return chat;
     } catch (e) {
+      console.error(e);
       throw new Error(e.message);
     }
   }
@@ -112,6 +115,7 @@ export class ChatService {
     try {
       return archivedChat;
     } catch (e) {
+      console.error(e);
       throw new Error(e.message);
     }
   }
@@ -146,6 +150,7 @@ export class ChatService {
     try {
       return updatedChat;
     } catch (e) {
+      console.error(e);
       throw new Error(e.message);
     }
   }

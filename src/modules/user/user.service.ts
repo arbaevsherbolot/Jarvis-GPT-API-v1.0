@@ -28,6 +28,7 @@ export class UserService {
     try {
       return user;
     } catch (e) {
+      console.error(e);
       throw new Error(e.message);
     }
   }
@@ -50,6 +51,7 @@ export class UserService {
     try {
       return user;
     } catch (e) {
+      console.error(e);
       throw new Error(e.message);
     }
   }
@@ -72,6 +74,7 @@ export class UserService {
     try {
       return user;
     } catch (e) {
+      console.error(e);
       throw new Error(e.message);
     }
   }

@@ -1,5 +1,4 @@
 import {
-  Body,
   Controller,
   Get,
   HttpCode,
@@ -7,10 +6,12 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { SpeechToTextService } from './speech-to-text.service';
-import { StartRecognitionDto } from './dto/speech-to-text.dto';
 import { GetCurrentUserId } from '../auth/common/decorators';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('speech-to-text')
 export class SpeechToTextController {
@@ -18,12 +19,13 @@ export class SpeechToTextController {
 
   @Post(':id')
   @HttpCode(HttpStatus.OK)
+  @UseInterceptors(FileInterceptor('file'))
   async startRecognition(
-    @Body() dto: StartRecognitionDto,
     @GetCurrentUserId() userId: number,
     @Param('id', ParseIntPipe) id: number,
+    @UploadedFile() file: Express.Multer.File,
   ) {
-    return await this.speechToTextService.startRecognition(dto, userId, id);
+    return await this.speechToTextService.startRecognition(file, userId, id);
   }
 
   @Get(':id')

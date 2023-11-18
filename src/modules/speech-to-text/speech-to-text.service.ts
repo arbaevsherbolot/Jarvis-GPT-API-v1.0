@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ChatGptService } from '../chat-gpt/chat-gpt.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { StartRecognitionDto } from './dto/speech-to-text.dto';
 import { UserService } from '../user/user.service';
 
 type Languages = 'EN' | 'RU';
@@ -14,13 +13,12 @@ export class SpeechToTextService {
     private userService: UserService,
   ) {}
 
-  async startRecognition(dto: StartRecognitionDto, userId: number, id: number) {
-    const { audio: base64Audio } = dto;
-    const audioData = Buffer.from(base64Audio, 'base64');
-    const allMessages = [];
-
+  async startRecognition(
+    file: Express.Multer.File,
+    userId: number,
+    id: number,
+  ) {
     const user = await this.userService.getUser(userId);
-
     const chat = await this.prisma.chat.findFirst({
       where: {
         id,
@@ -35,18 +33,16 @@ export class SpeechToTextService {
       throw new BadRequestException('Chat not found');
     }
 
-    let lang: Languages = 'EN';
-    if (chat.language === 'RU') {
-      lang = 'RU';
-    }
+    const lang: Languages = chat.language as Languages;
 
+    const allMessages = [];
     if (chat.messages.length > 0) {
       allMessages.push(...chat.messages);
     }
 
     try {
       const transcript = await this.chatGptService.transcribeAudio(
-        audioData,
+        file.buffer,
         lang,
       );
       allMessages.push({
@@ -58,36 +54,32 @@ export class SpeechToTextService {
           : `Представьте, что вы - ИИ, работающий в качестве моего личного Джарвиса, вас зовут Джарвис!, а меня вы можете называть Шер!, и помогающий мне в решении различных задач. Отвечайте очень коротко и ясно, ограничение на ответ - 1000 символов`,
         allMessages,
       );
-      const audioUrl = await this.chatGptService.synthesizeSpeech(
-        user.id,
-        aiReply,
-      );
 
-      const message = await this.prisma.message.create({
-        data: {
-          chatId: chat.id,
-          userId: user.id,
-          text: transcript,
-          audioSource: audioUrl as string,
-        },
-      });
+      const [message, reply] = await this.prisma.$transaction([
+        this.prisma.message.create({
+          data: {
+            chatId: chat.id,
+            userId: user.id,
+            text: transcript,
+            audioSource: await this.chatGptService.synthesizeSpeech(
+              user.id,
+              aiReply,
+            ),
+          },
+        }),
+        this.prisma.message.create({
+          data: {
+            chatId: chat.id,
+            userId: user.id,
+            text: aiReply.toString().trim(),
+            ai: true,
+          },
+        }),
+      ]);
 
-      const reply = await this.prisma.message.create({
-        data: {
-          chatId: chat.id,
-          userId: user.id,
-          text: aiReply.toString().trim(),
-          ai: true,
-        },
-      });
-
-      const result = {
-        message,
-        reply,
-      };
-
-      return result;
+      return { message, reply };
     } catch (e) {
+      console.error(e);
       throw new Error(e.message);
     }
   }
@@ -112,6 +104,7 @@ export class SpeechToTextService {
     try {
       return chat.messages;
     } catch (e) {
+      console.error(e);
       throw new Error(e.message);
     }
   }
