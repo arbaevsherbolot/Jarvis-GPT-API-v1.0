@@ -1,32 +1,28 @@
 import {
-  Controller,
-  Post,
   Body,
+  Controller,
+  Get,
   HttpCode,
   HttpStatus,
-  UseGuards,
-  Get,
-  Put,
-  UseInterceptors,
-  UploadedFile,
+  Patch,
+  Post,
   Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { AuthService } from './auth.service';
 import {
   LoginDto,
   RegisterDto,
-  EditProfileDto,
-  ForgotPasswordDto,
+  EditMeDto,
   ResetPasswordDto,
-  requestToLoginDto,
+  ForgotPasswordDto,
 } from './dto';
-import { GoogleOauthGuard, RefreshTokenGuard } from './common/guards';
-import { GetCurrentUser, GetCurrentUserId, Public } from './common/decorators';
-import { Response } from 'express';
+import { AuthService } from './auth.service';
+import { Request, Response } from 'express';
+import { GetCurrentUserId, Public } from './common/decorators';
+import { GoogleOauthGuard } from './common/guards';
 
-@Controller('auth')
+@Controller()
 export class AuthController {
   constructor(private authService: AuthService) {}
 
@@ -34,38 +30,38 @@ export class AuthController {
   @Get('google/callback')
   @HttpCode(HttpStatus.OK)
   @UseGuards(GoogleOauthGuard)
-  async googleCallback(
-    @Req() req,
-    @Res({ passthrough: true }) response: Response,
-  ) {
-    const { tokens } = await this.authService.googleAuth(req.user);
-
-    response.cookie('access_token', tokens.access_token);
-    response.json({
-      status: HttpStatus.OK,
-      message: 'Successfully authenticated!',
-    });
-  }
-
-  @Public()
-  @Post('register')
-  @HttpCode(HttpStatus.CREATED)
-  async register(@Body() dto: RegisterDto) {
-    return await this.authService.register(dto);
-  }
-
-  @Public()
-  @Post('requestToLogin')
-  @HttpCode(HttpStatus.OK)
-  async requestToLogin(@Body() dto: requestToLoginDto) {
-    return await this.authService.requestToLogin(dto);
+  async googleCallback(@Req() request: Request, @Res() response: Response) {
+    return await this.authService.googleAuth(request, response);
   }
 
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() dto: LoginDto) {
-    return await this.authService.login(dto);
+  async login(@Body() dto: LoginDto, @Res() response: Response) {
+    return await this.authService.login(dto, response);
+  }
+
+  @Public()
+  @Post('register')
+  @HttpCode(HttpStatus.CREATED)
+  async register(@Body() dto: RegisterDto, @Res() response: Response) {
+    return await this.authService.register(dto, response);
+  }
+
+  @Get('me')
+  @HttpCode(HttpStatus.OK)
+  async getMe(
+    @GetCurrentUserId() userId: number,
+    @Req() request: Request,
+    @Res() response: Response,
+  ) {
+    return await this.authService.getMe(userId, request, response);
+  }
+
+  @Patch('me')
+  @HttpCode(HttpStatus.OK)
+  async editMe(@GetCurrentUserId() userId: number, @Body() dto: EditMeDto) {
+    return await this.authService.editMe(userId, dto);
   }
 
   @Public()
@@ -80,47 +76,5 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto);
-  }
-
-  @Get('profile')
-  @HttpCode(HttpStatus.OK)
-  async getProfile(@GetCurrentUserId() userId: number) {
-    return await this.authService.getProfile(userId);
-  }
-
-  @Put('profile/edit')
-  @HttpCode(HttpStatus.OK)
-  async editProfile(
-    @Body() dto: EditProfileDto,
-    @GetCurrentUserId() userId: number,
-  ) {
-    return await this.authService.editProfile(userId, dto);
-  }
-
-  @Post('logout')
-  @HttpCode(HttpStatus.OK)
-  async logout(@GetCurrentUserId() userId: number) {
-    return await this.authService.logout(userId);
-  }
-
-  @Put('upload/photo')
-  @HttpCode(HttpStatus.OK)
-  @UseInterceptors(FileInterceptor('file'))
-  async uploadPhoto(
-    @GetCurrentUserId() userId: number,
-    @UploadedFile() file: Express.Multer.File,
-  ) {
-    return await this.authService.uploadPhoto(userId, file);
-  }
-
-  @Public()
-  @UseGuards(RefreshTokenGuard)
-  @Post('refresh')
-  @HttpCode(HttpStatus.OK)
-  async refresh(
-    @GetCurrentUser('refreshToken') refreshToken: string,
-    @GetCurrentUserId() userId: number,
-  ) {
-    return await this.authService.refreshToken(userId, refreshToken);
   }
 }

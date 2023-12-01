@@ -1,9 +1,1 @@
-export {
-  RegisterDto,
-  LoginDto,
-  ForgotPasswordDto,
-  ResetPasswordDto,
-  EditProfileDto,
-  googleUserDto,
-  requestToLoginDto
-} from './auth.dto';
+export { LoginDto, RegisterDto, EditMeDto, ForgotPasswordDto, ResetPasswordDto } from './auth.dto';

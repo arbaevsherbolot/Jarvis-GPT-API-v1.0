@@ -1,8 +1,8 @@
 import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import OpenAIApi from 'openai';
 import { ChatCompletion, ChatCompletionMessageParam } from 'openai/resources';
-import { getUrl, uploadAudio } from '../../utils/supabase';
 import { File } from '@web-std/file';
+import { SupabaseService } from '../supabase/supabase.service';
 
 type Message = {
   id: number;
@@ -19,7 +19,7 @@ type Message = {
 export class ChatGptService {
   public openai: OpenAIApi;
 
-  constructor() {
+  constructor(private supabaseService: SupabaseService) {
     this.openai = new OpenAIApi({
       apiKey: process.env.OPEN_AI_SECRET_KEY,
     });
@@ -70,8 +70,8 @@ export class ChatGptService {
       const arrayBuffer = await ttsResponse.arrayBuffer();
       const audioBuffer = Buffer.from(arrayBuffer);
 
-      const path = await uploadAudio(userId, audioBuffer);
-      const audioUrl = getUrl('/audios', path);
+      const path = await this.supabaseService.uploadAudio(userId, audioBuffer);
+      const audioUrl = await this.supabaseService.getUrl('/audios', path);
 
       return audioUrl;
     } catch (e) {

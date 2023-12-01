@@ -33,26 +33,22 @@ export class ImageController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  async getImage(
-    @GetCurrentUserId() userId: number,
-    @Param('id', ParseIntPipe) id: number,
-  ) {
-    return await this.imageService.getImage(id, userId);
+  async getImage(@Param('id', ParseIntPipe) id: number) {
+    return await this.imageService.getImage(id);
   }
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  async getImages(@GetCurrentUserId() userId: number) {
-    return await this.imageService.getImages(userId);
+  async getImages() {
+    return await this.imageService.getImages();
   }
 
   @Post(':id/generate')
   @HttpCode(HttpStatus.OK)
   async generateImage(
-    @GetCurrentUserId() userId: number,
     @Body() dto: generateImageDto,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    return await this.imageService.generateImage(id, userId, dto);
+    return await this.imageService.generateImage(id, dto);
   }
 }

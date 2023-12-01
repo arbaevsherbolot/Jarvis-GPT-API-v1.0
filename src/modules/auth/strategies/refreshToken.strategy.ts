@@ -7,6 +7,14 @@ type JwtPayload = {
   id: string;
 };
 
+const cookieExtractor = (req: any) => {
+  let token = null;
+  if (req && req.cookies) {
+    token = req.cookies['session-refresh'];
+  }
+  return token;
+};
+
 @Injectable()
 export class RefreshTokenStrategy extends PassportStrategy(
   Strategy,
@@ -14,17 +22,14 @@ export class RefreshTokenStrategy extends PassportStrategy(
 ) {
   constructor() {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([cookieExtractor]),
       secretOrKey: process.env.JWT_REFRESH_TOKEN_SECRET,
       passReqToCallback: true,
     });
   }
 
   validate(req: Request, payload: JwtPayload) {
-    const authorizationHeader = (req as any).headers?.authorization as
-      | string
-      | undefined;
-    const refreshToken = authorizationHeader?.replace('Bearer', '').trim();
+    const refreshToken = cookieExtractor(req);
 
     return {
       ...payload,

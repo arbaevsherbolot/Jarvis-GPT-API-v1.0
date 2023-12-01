@@ -1,126 +1,82 @@
+import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import {
-  ConflictException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
-import { MailerService } from '@nestjs-modules/mailer';
-import { PrismaService } from '../prisma/prisma.service';
-import { JwtService } from '../jwt/jwt.service';
-import { hash } from '../../utils/bcrypt';
-import { RegisterSchema } from './auth.schema';
-import { LoginDto, RegisterDto, requestToLoginDto } from './dto';
-import { compare } from 'bcrypt';
-import { getUrl, uploadPhoto } from '../../utils/supabase';
-import {
-  EditProfileDto,
+  EditMeDto,
   ForgotPasswordDto,
+  LoginDto,
+  RegisterDto,
   ResetPasswordDto,
-  googleUserDto,
 } from './dto';
-import { UserService } from '../user/user.service';
+import { UsersService } from '../users/users.service';
+import { compare, hash } from '../../utils/bcrypt';
+import { JwtService } from '../jwt/jwt.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { MailerService } from '@nestjs-modules/mailer';
+import { Request, Response } from 'express';
+import { LocationData, getLocation } from '../../utils/location';
+import { User } from '.prisma/client';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private prisma: PrismaService,
+    private usersService: UsersService,
     private jwt: JwtService,
-    private readonly mailerService: MailerService,
-    private userService: UserService,
+    private prisma: PrismaService,
+    private mailerService: MailerService,
   ) {}
 
-  async googleAuth(dto: googleUserDto) {
-    const { firstName, lastName, email, photo } = dto;
+  private async setCookies(response: Response, tokens: any) {
+    response.cookie('session', tokens['access_token']);
+    response.cookie('session-refresh', tokens['refresh_token']);
+  }
+
+  async googleAuth(request: Request, response: Response) {
+    const { firstName, lastName, email } = request.user as User;
 
     const existUser = await this.prisma.user.findUnique({
       where: {
         email,
+      },
+      include: {
+        location: true,
+        chats: true,
+        messages: true,
       },
     });
 
     if (existUser) {
       const tokens = await this.jwt.generateTokens(existUser.id);
-      await this.updateRefreshTokenHash(existUser.id, tokens.refresh_token);
+      await Promise.all([
+        this.updateRefreshTokenHash(existUser.id, tokens.refresh_token),
+        this.setCookies(response, tokens),
+      ]);
 
-      return {
-        tokens,
-      };
+      try {
+        return response.status(HttpStatus.OK).json(existUser);
+      } catch (e) {
+        console.error(e);
+        throw new Error(e.message);
+      }
     }
 
-    const hashedPassword = await hash('wedevx2023');
-
-    const data: RegisterSchema = {
+    const user = await this.usersService.createUser({
       firstName,
       lastName,
       email,
-      photo,
-      password: hashedPassword,
-    };
-
-    const newUser = await this.prisma.user.create({
-      data,
+      password: 'wedevx2023',
     });
-
-    const tokens = await this.jwt.generateTokens(newUser.id);
-    await this.updateRefreshTokenHash(newUser.id, tokens.refresh_token);
-
-    return {
-      tokens,
-    };
-  }
-
-  async register(dto: RegisterDto) {
-    const { firstName, lastName, email, password } = dto;
-
-    const existUser = await this.prisma.user.findUnique({
-      where: {
-        email,
-      },
-    });
-
-    if (existUser) {
-      throw new ConflictException('User already exists');
-    }
-
-    const hashedPassword = await hash(password);
-
-    const data: RegisterSchema = {
-      firstName,
-      lastName,
-      email,
-      password: hashedPassword,
-    };
-
-    const user = await this.prisma.user.create({
-      data,
-    });
-
-    const tokens = await this.jwt.generateTokens(user.id);
-    await this.updateRefreshTokenHash(user.id, tokens.refresh_token);
 
     try {
-      return {
-        user,
-        tokens,
-      };
+      return response.status(HttpStatus.OK).json(user);
     } catch (e) {
       console.error(e);
       throw new Error(e.message);
     }
   }
 
-  async login(dto: LoginDto) {
-    const { emailOrName, password } = dto;
+  async login(dto: LoginDto, response: Response) {
+    const { emailOrUsername, password } = dto;
 
-    const user = await this.userService.findByEmailOrName(emailOrName);
-
-    if (user.password.length === 0) {
-      throw new ConflictException(
-        'User has logged in using another service, such as Google',
-      );
-    }
-
+    const user = await this.usersService.findByEmailOrUsername(emailOrUsername);
     const comparedPassword = await compare(password, user.password);
 
     if (!comparedPassword) {
@@ -128,40 +84,69 @@ export class AuthService {
     }
 
     const tokens = await this.jwt.generateTokens(user.id);
-    await this.updateRefreshTokenHash(user.id, tokens.refresh_token);
+    await Promise.all([
+      this.updateRefreshTokenHash(user.id, tokens.refresh_token),
+      this.setCookies(response, tokens),
+    ]);
 
     try {
-      return {
-        user,
-        tokens,
-      };
+      return response.status(HttpStatus.OK).json(user);
     } catch (e) {
       console.error(e);
       throw new Error(e.message);
     }
   }
 
-  async requestToLogin(dto: requestToLoginDto) {
-    const { emailOrName } = dto;
+  async register(dto: RegisterDto, response: Response) {
+    const user = await this.usersService.createUser(dto);
 
-    const user = await this.userService.findByEmailOrName(emailOrName);
-    const dbUser = await this.prisma.user.findUnique({
+    const tokens = await this.jwt.generateTokens(user.id);
+    await Promise.all([
+      this.updateRefreshTokenHash(user.id, tokens.refresh_token),
+      this.setCookies(response, tokens),
+    ]);
+
+    try {
+      return response.status(HttpStatus.CREATED).json(user);
+    } catch (e) {
+      console.error(e);
+      throw new Error(e.message);
+    }
+  }
+
+  async getMe(userId: number, request: Request, response: Response) {
+    const user = await this.usersService.findById(userId);
+    const ip =
+      request.headers['x-real-ip'] ||
+      request.headers['x-forwarded-for'] ||
+      request.socket.remoteAddress ||
+      '';
+    const locationData = await getLocation();
+
+    await this.updateOrCreateLocation(user, ip, locationData);
+
+    try {
+      return response.status(HttpStatus.OK).json(user);
+    } catch (e) {
+      console.error(e);
+      throw new Error(e.message);
+    }
+  }
+
+  async editMe(userId: number, dto: EditMeDto) {
+    const user = await this.usersService.findById(userId);
+
+    const updatedUser = await this.prisma.user.update({
       where: {
-        email: user.email,
+        id: user.id,
       },
-      select: {
-        firstName: true,
-        lastName: true,
-        email: true,
-        photo: true,
-        phone: true,
-        bio: true,
-        isVerified: true,
+      data: {
+        ...dto,
       },
     });
 
     try {
-      return dbUser;
+      return updatedUser;
     } catch (e) {
       console.error(e);
       throw new Error(e.message);
@@ -171,10 +156,10 @@ export class AuthService {
   async forgotPassword(dto: ForgotPasswordDto) {
     const { email } = dto;
 
-    const user = await this.userService.findByEmail(email);
+    const user = await this.usersService.findByEmail(email);
 
     const token = await this.jwt.generateResetPasswordSecret(user.id);
-    const forgotLink = `${process.env.CLIENT_APP_URL}/password/reset/?token=${token}`;
+    const forgotLink = `${process.env.FRONTEND_BASE_URL}/password/reset/?token=${token}`;
 
     await this.prisma.user.update({
       where: {
@@ -224,116 +209,38 @@ export class AuthService {
     });
 
     try {
-      return `User password: ${user.email} successfully updated`;
+      return `Password of ${user.email} successfully updated`;
     } catch (e) {
       console.error(e);
       throw new Error(e.message);
     }
   }
 
-  async logout(userId: number) {
-    const user = await this.userService.getUser(userId);
-
-    try {
-      if (user.refreshToken !== null) {
-        await this.prisma.user.update({
-          where: {
-            id: user.id,
-          },
-          data: {
-            refreshToken: null,
-          },
-        });
-      }
-    } catch (e) {
-      console.error(e);
-      throw new Error(e.message);
-    }
-  }
-
-  async getProfile(userId: number) {
-    const user = await this.userService.getUser(userId);
-
-    try {
-      return user;
-    } catch (e) {
-      console.error(e);
-      throw new Error(e.message);
-    }
-  }
-
-  async editProfile(userId: number, dto: EditProfileDto) {
-    const { firstName, lastName, bio } = dto;
-
-    const user = await this.userService.getUser(userId);
-
-    const updatedUser = await this.prisma.user.update({
-      where: {
-        id: user.id,
-      },
-      data: {
-        firstName,
-        lastName,
-        bio,
-      },
+  async updateOrCreateLocation(
+    user: User,
+    ip: string | string[],
+    locationData: LocationData,
+  ) {
+    const existingLocation = await this.prisma.location.findFirst({
+      where: { userId: user.id },
     });
 
-    try {
-      return updatedUser;
-    } catch (e) {
-      console.error(e);
-      throw new Error(e.message);
-    }
-  }
-
-  async uploadPhoto(userId: number, file: Express.Multer.File) {
-    const user = await this.userService.getUser(userId);
-
-    if (!file) {
-      throw new NotFoundException('File not found');
-    }
-
-    const path = await uploadPhoto(user.id, file);
-    const url = getUrl('/photos', path);
-
-    const updatedUser = await this.prisma.user.update({
-      where: {
-        id: user.id,
-      },
-      data: {
-        photo: url,
-      },
-    });
-
-    try {
-      return updatedUser.photo;
-    } catch (e) {
-      console.error(e);
-      throw new Error(e.message);
-    }
-  }
-
-  async refreshToken(userId: number, token: string) {
-    const user = await this.userService.getUser(userId);
-
-    let comparedToken: boolean;
-
-    if (user.refreshToken) {
-      comparedToken = await this.jwt.compareToken(token, user.refreshToken);
-    }
-
-    if (!comparedToken) {
-      throw new ForbiddenException('Access denied, invalid token');
-    }
-
-    const tokens = await this.jwt.generateTokens(user.id);
-    await this.updateRefreshTokenHash(user.id, tokens.refresh_token);
-
-    try {
-      return tokens;
-    } catch (e) {
-      console.error(e);
-      throw new Error(e.message);
+    if (existingLocation) {
+      await this.prisma.location.update({
+        where: { id: existingLocation.id },
+        data: {
+          ip: Array.isArray(ip) ? ip.join(', ') : ip,
+          ...locationData,
+        },
+      });
+    } else {
+      await this.prisma.location.create({
+        data: {
+          userId: user.id,
+          ip: Array.isArray(ip) ? ip.join(', ') : ip,
+          ...locationData,
+        },
+      });
     }
   }
 

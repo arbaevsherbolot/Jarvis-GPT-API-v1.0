@@ -1,13 +1,20 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '../jwt/jwt.module';
-import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
+import { UsersService } from '../users/users.service';
+import { JwtService } from '../jwt/jwt.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { AccessTokenStrategy, RefreshTokenStrategy } from './strategies';
-import { UserModule } from '../user/user.module';
 
 @Module({
-  imports: [JwtModule, UserModule],
+  providers: [
+    AuthService,
+    UsersService,
+    JwtService,
+    PrismaService,
+    AccessTokenStrategy,
+    RefreshTokenStrategy,
+  ],
   controllers: [AuthController],
-  providers: [AuthService, AccessTokenStrategy, RefreshTokenStrategy],
 })
 export class AuthModule {}

@@ -1,16 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ChatGptService } from '../chat-gpt/chat-gpt.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { UserService } from '../user/user.service';
 import { generateImageDto, newImageDto } from './dto';
-import { getUrl, uploadPhoto } from '../../utils/supabase';
+import { UsersService } from '../users/users.service';
+import { SupabaseService } from '../supabase/supabase.service';
 
 @Injectable()
 export class ImageService {
   constructor(
     private chatGptService: ChatGptService,
     private prisma: PrismaService,
-    private userService: UserService,
+    private usersService: UsersService,
+    private supabaseService: SupabaseService,
   ) {}
 
   async newImage(
@@ -21,8 +22,7 @@ export class ImageService {
   ) {
     const { text } = dto;
 
-    const user = await this.userService.getUser(userId);
-
+    const user = await this.usersService.findById(userId);
     const chat = await this.prisma.chat.findFirst({
       where: {
         id,
@@ -37,9 +37,8 @@ export class ImageService {
       throw new NotFoundException('Chat not found');
     }
 
-    const path = await uploadPhoto(user.id, file);
-    const url = getUrl('/photos', path);
-
+    const path = await this.supabaseService.uploadPhoto(user.id, file);
+    const url = await this.supabaseService.getUrl('/photos', path);
     const output = await this.chatGptService.chatGptVision(text, url);
     const audioUrl = await this.chatGptService.synthesizeSpeech(
       user.id,
@@ -64,9 +63,7 @@ export class ImageService {
     }
   }
 
-  async getImage(id: number, userId: number) {
-    await this.userService.getUser(userId);
-
+  async getImage(id: number) {
     const image = await this.prisma.image.findFirst({
       where: {
         id,
@@ -85,9 +82,7 @@ export class ImageService {
     }
   }
 
-  async getImages(userId: number) {
-    await this.userService.getUser(userId);
-
+  async getImages() {
     const images = await this.prisma.image.findMany();
 
     if (!images) {
@@ -102,10 +97,8 @@ export class ImageService {
     }
   }
 
-  async generateImage(id: number, userId: number, dto: generateImageDto) {
+  async generateImage(id: number, dto: generateImageDto) {
     const { text } = dto;
-
-    await this.userService.getUser(userId);
 
     const chat = await this.prisma.chat.findFirst({
       where: {

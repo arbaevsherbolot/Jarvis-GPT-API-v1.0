@@ -7,8 +7,9 @@ import {
   PrismaModule,
   SpeechToTextModule,
   ChatModule,
-  UserModule,
-  ImageModule
+  UsersModule,
+  ImageModule,
+  UploadModule,
 } from './modules';
 import { APP_GUARD } from '@nestjs/core';
 import { AccessTokenGuard } from './modules/auth/common/guards';
@@ -37,8 +38,9 @@ import { GoogleStrategy } from './modules/auth/strategies';
     JwtModule,
     PrismaModule,
     ChatModule,
-    UserModule,
+    UsersModule,
     ImageModule,
+    UploadModule,
   ],
   controllers: [],
   providers: [

@@ -13,27 +13,25 @@ export class AccessTokenGuard extends AuthGuard('jwt') {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const isPublic = this.reflector.getAllAndOverride('isPublic', [
-      context.getHandler(),
-      context.getClass(),
-    ]);
-
-    if (isPublic) return true;
-
-    const request = context.switchToHttp().getRequest();
-    const tokenFromHeader = this.extractTokenFromHeader(request);
-    const tokenFromCookies = this.extractTokenFromCookies(request);
-
-    if (!tokenFromHeader && !tokenFromCookies) {
-      throw new UnauthorizedException('Access token is missing');
-    }
-
-    const token = tokenFromHeader || tokenFromCookies;
-
     try {
-      request.headers.authorization = `Bearer ${token}`;
-      const canActivateSuper = await super.canActivate(context);
-      return canActivateSuper as boolean;
+      const isPublic = this.reflector.getAllAndOverride('isPublic', [
+        context.getHandler(),
+        context.getClass(),
+      ]);
+
+      if (isPublic) {
+        return true;
+      }
+
+      const request = context.switchToHttp().getRequest();
+      const accessToken = this.extractTokenFromCookies(request);
+
+      if (!accessToken) {
+        throw new UnauthorizedException('Access token is missing');
+      }
+
+      const canActivateResult = await super.canActivate(context);
+      return canActivateResult as boolean;
     } catch (e) {
       if (e.name === 'TokenExpiredError') {
         throw new UnauthorizedException('Token has expired');
@@ -43,17 +41,9 @@ export class AccessTokenGuard extends AuthGuard('jwt') {
     }
   }
 
-  private extractTokenFromHeader(request: any): string | null {
-    const authHeader = request.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      return authHeader.substring(7);
-    }
-    return null;
-  }
-
   private extractTokenFromCookies(request: any): string | null {
-    if (request.cookies && request.cookies.access_token) {
-      return request.cookies.access_token;
+    if (request.cookies && request.cookies.session) {
+      return request.cookies.session;
     }
     return null;
   }

@@ -1,9 +1,11 @@
 import {
   Controller,
+  FileTypeValidator,
   Get,
   HttpCode,
   HttpStatus,
   Param,
+  ParseFilePipe,
   ParseIntPipe,
   Post,
   UploadedFile,
@@ -23,7 +25,16 @@ export class SpeechToTextController {
   async startRecognition(
     @GetCurrentUserId() userId: number,
     @Param('id', ParseIntPipe) id: number,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new FileTypeValidator({
+            fileType: 'audio/*',
+          }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
   ) {
     return await this.speechToTextService.startRecognition(file, userId, id);
   }

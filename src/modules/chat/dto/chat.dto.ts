@@ -8,23 +8,14 @@ import {
 import { Languages } from './chat.enum';
 
 export class CreateChatDto {
-  @IsNotEmpty()
-  @IsString()
-  @MinLength(2)
-  @MaxLength(25)
+  @IsNotEmpty({ message: 'Title cannot be empty' })
+  @IsString({ message: 'Invalid title format' })
+  @MinLength(2, { message: 'Title must be at least 2 characters long' })
+  @MaxLength(25, { message: 'Title cannot be longer than 25 characters' })
   title: string;
 
-  @IsEnum(Languages)
+  @IsEnum(Languages, { message: 'Invalid language value' })
   language: Languages;
 }
 
-export class EditChatDto {
-  @IsNotEmpty()
-  @IsString()
-  @MinLength(2)
-  @MaxLength(25)
-  title: string;
-
-  @IsEnum(Languages)
-  language: Languages;
-}
+export class EditChatDto extends CreateChatDto {}
