@@ -143,6 +143,11 @@ export class AuthService {
       data: {
         ...dto,
       },
+      include: {
+        location: true,
+        chats: true,
+        messages: true,
+      },
     });
 
     try {
