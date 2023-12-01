@@ -67,6 +67,11 @@ export class EditMeDto {
   username?: string;
 
   @IsOptional()
+  @IsNotEmpty({ message: 'Nationality cannot be empty' })
+  @IsString({ message: 'Nationality must be a string' })
+  nationality?: string;
+
+  @IsOptional()
   @IsNotEmpty({ message: 'Bio cannot be empty' })
   @IsString({ message: 'Bio must be a string' })
   @MinLength(5, { message: 'Bio must be at least 5 characters long' })
