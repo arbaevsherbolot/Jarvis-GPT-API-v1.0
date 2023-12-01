@@ -8,7 +8,7 @@ async function start() {
   const app = await NestFactory.create(AppModule, { cors: true });
   const port = process.env.PORT || 3000;
 
-  //CORS options
+  //Set CORS options
   const corsOptions: CorsOptions = {
     origin: 'http://localhost:3000',
     credentials: true,
