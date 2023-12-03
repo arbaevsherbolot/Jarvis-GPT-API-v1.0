@@ -48,6 +48,12 @@ export class AuthController {
     return await this.authService.register(dto, response);
   }
 
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  async logout(@GetCurrentUserId() userId: number, @Res() response: Response) {
+    return await this.authService.logout(userId, response);
+  }
+
   @Get('me')
   @HttpCode(HttpStatus.OK)
   async getMe(

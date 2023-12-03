@@ -25,8 +25,17 @@ export class AuthService {
   ) {}
 
   private async setCookies(response: Response, tokens: any) {
-    response.cookie('session', tokens['access_token']);
-    response.cookie('session-refresh', tokens['refresh_token']);
+    response.cookie('session', tokens['access_token'], {
+      maxAge: 60 * 30 * 1000, // 30 minutes
+      httpOnly: true,
+      secure: false,
+    });
+
+    response.cookie('session-refresh', tokens['refresh_token'], {
+      maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
+      httpOnly: true,
+      secure: false,
+    });
   }
 
   async googleAuth(request: Request, response: Response) {
@@ -51,14 +60,16 @@ export class AuthService {
       ]);
 
       try {
-        return response.status(HttpStatus.OK).json(existUser);
+        return response
+          .status(HttpStatus.OK)
+          .redirect(process.env.FRONTEND_BASE_URL);
       } catch (e) {
         console.error(e);
         throw new Error(e.message);
       }
     }
 
-    const user = await this.usersService.createUser({
+    await this.usersService.createUser({
       firstName,
       lastName,
       email,
@@ -66,7 +77,9 @@ export class AuthService {
     });
 
     try {
-      return response.status(HttpStatus.OK).json(user);
+      return response
+        .status(HttpStatus.OK)
+        .redirect(process.env.FRONTEND_BASE_URL);
     } catch (e) {
       console.error(e);
       throw new Error(e.message);
@@ -108,6 +121,29 @@ export class AuthService {
 
     try {
       return response.status(HttpStatus.CREATED).json(user);
+    } catch (e) {
+      console.error(e);
+      throw new Error(e.message);
+    }
+  }
+
+  async logout(userId: number, response: Response) {
+    const user = await this.usersService.findById(userId);
+
+    if (user.refreshToken !== null) {
+      await this.prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          refreshToken: null,
+        },
+      });
+    }
+
+    try {
+      response.clearCookie('session');
+      response.clearCookie('session-refresh');
     } catch (e) {
       console.error(e);
       throw new Error(e.message);
