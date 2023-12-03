@@ -24,6 +24,7 @@ async function start() {
   //Set the Cookie Parser
   app.use(cookieParser());
 
+  // Start the Nest.js application and log the server's address
   await app.listen(port, () =>
     console.log(`📢 Server starting on: http://localhost:${port}/ ⚡️`),
   );
