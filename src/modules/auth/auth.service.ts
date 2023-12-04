@@ -29,14 +29,14 @@ export class AuthService {
 
     response.cookie('session', tokens['access_token'], {
       maxAge: 60 * 30 * 1000, // 30 minutes
-      // httpOnly: !isProduction,
-      // secure: isProduction,
+      httpOnly: !isProduction,
+      secure: isProduction,
     });
 
     response.cookie('session-refresh', tokens['refresh_token'], {
       maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
-      // httpOnly: !isProduction,
-      // secure: isProduction,
+      httpOnly: !isProduction,
+      secure: isProduction,
     });
   }
 
