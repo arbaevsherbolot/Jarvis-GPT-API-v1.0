@@ -117,7 +117,7 @@ export class UsersService {
         firstName,
         lastName,
         email,
-        username: `@${username}`,
+        username,
         password: hashedPassword,
       },
       include: {
