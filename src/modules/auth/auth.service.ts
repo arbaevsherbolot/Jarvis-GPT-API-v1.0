@@ -43,16 +43,7 @@ export class AuthService {
   async googleAuth(request: Request, response: Response) {
     const { firstName, lastName, email } = request.user as User;
 
-    const existUser = await this.prisma.user.findUnique({
-      where: {
-        email,
-      },
-      include: {
-        location: true,
-        chats: true,
-        messages: true,
-      },
-    });
+    const existUser = await this.usersService.findByEmail(email);
 
     if (existUser) {
       const tokens = await this.jwt.generateTokens(existUser.id);
@@ -71,17 +62,23 @@ export class AuthService {
       }
     }
 
-    await this.usersService.createUser({
+    const user = await this.usersService.createUser({
       firstName,
       lastName,
       email,
       password: 'wedevx2023',
     });
 
+    const tokens = await this.jwt.generateTokens(user.id);
+    await Promise.all([
+      this.updateRefreshTokenHash(user.id, tokens.refresh_token),
+      this.setCookies(response, tokens),
+    ]);
+
     try {
       return response
         .status(HttpStatus.OK)
-        .redirect(process.env.FRONTEND_BASE_URL);
+        .redirect(`${process.env.FRONTEND_BASE_URL}`);
     } catch (e) {
       console.error(e);
       throw new Error(e.message);

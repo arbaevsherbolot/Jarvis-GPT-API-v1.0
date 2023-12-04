@@ -78,7 +78,7 @@ export class UsersService {
     }
   }
 
-  async getUser(userId: number, id: number): Promise<User> {
+  async getUser(userId: number, username: string): Promise<User> {
     const user = await this.findById(userId);
 
     if (user.role === 'USER') {
@@ -87,7 +87,7 @@ export class UsersService {
       );
     }
 
-    const dbUser = await this.findById(id);
+    const dbUser = await this.findByUsername(username);
 
     try {
       return dbUser;
@@ -117,7 +117,7 @@ export class UsersService {
         firstName,
         lastName,
         email,
-        username,
+        username: `@${username}`,
         password: hashedPassword,
       },
       include: {
@@ -195,6 +195,34 @@ export class UsersService {
     const user = await this.prisma.user.findUnique({
       where: {
         email,
+      },
+      include: {
+        location: true,
+        chats: true,
+        messages: true,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException("User doesn't exist");
+    }
+
+    if (!user.isActive) {
+      throw new ForbiddenException('User has been deactivated');
+    }
+
+    try {
+      return user;
+    } catch (e) {
+      console.error(e);
+      throw new Error(e.message);
+    }
+  }
+
+  async findByUsername(username: string): Promise<User> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        username,
       },
       include: {
         location: true,

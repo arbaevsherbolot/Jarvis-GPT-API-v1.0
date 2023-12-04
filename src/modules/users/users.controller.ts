@@ -4,7 +4,6 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  ParseIntPipe,
   Query,
 } from '@nestjs/common';
 import { GetCurrentUserId } from '../auth/common/decorators';
@@ -23,12 +22,12 @@ export class UsersController {
     return await this.usersService.getUsers(userId, query);
   }
 
-  @Get(':id')
+  @Get(':username')
   @HttpCode(HttpStatus.OK)
   async getUser(
     @GetCurrentUserId() userId: number,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('username') username: string,
   ) {
-    return await this.usersService.getUser(userId, id);
+    return await this.usersService.getUser(userId, username);
   }
 }
