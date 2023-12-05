@@ -21,6 +21,7 @@ import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
 import { GetCurrentUserId, Public } from './common/decorators';
 import { GoogleOauthGuard } from './common/guards';
+import { GitHubOauthGuard } from './common/guards/github-oauth.guard';
 
 @Controller()
 export class AuthController {
@@ -31,7 +32,15 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(GoogleOauthGuard)
   async googleCallback(@Req() request: Request, @Res() response: Response) {
-    return await this.authService.googleAuth(request, response);
+    return await this.authService.oauth(request, response);
+  }
+
+  @Public()
+  @Get('github/callback')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(GitHubOauthGuard)
+  async githubCallback(@Req() request: Request, @Res() response: Response) {
+    return await this.authService.oauth(request, response);
   }
 
   @Public()

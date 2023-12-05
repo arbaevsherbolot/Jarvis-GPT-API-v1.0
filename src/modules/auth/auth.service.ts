@@ -46,7 +46,7 @@ export class AuthService {
     response.status(200).json({ success: true });
   }
 
-  async googleAuth(request: Request, response: Response) {
+  async oauth(request: Request, response: Response) {
     const { firstName, lastName, email } = request.user as User;
 
     const existUser = await this.usersService.findByEmail(email);

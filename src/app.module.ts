@@ -14,7 +14,6 @@ import {
 import { APP_GUARD } from '@nestjs/core';
 import { AccessTokenGuard } from './modules/auth/common/guards';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { GoogleStrategy } from './modules/auth/strategies';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 
@@ -53,7 +52,6 @@ import { join } from 'path';
       provide: APP_GUARD,
       useClass: AccessTokenGuard,
     },
-    GoogleStrategy,
   ],
 })
 export class AppModule {}
