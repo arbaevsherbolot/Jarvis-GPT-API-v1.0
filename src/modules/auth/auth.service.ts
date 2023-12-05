@@ -84,7 +84,7 @@ export class AuthService {
     try {
       return response
         .status(HttpStatus.OK)
-        .redirect(`${process.env.FRONTEND_BASE_URL}`);
+        .redirect(process.env.FRONTEND_BASE_URL);
     } catch (e) {
       console.error(e);
       throw new Error(e.message);
@@ -226,7 +226,7 @@ export class AuthService {
     });
 
     try {
-      return `Password reset link sent to ${user.email}`;
+      return `Password reset link has been sent to ${user.email}`;
     } catch (e) {
       console.error(e);
       throw new Error(e.message);
@@ -254,7 +254,7 @@ export class AuthService {
     });
 
     try {
-      return `Password of ${user.email} successfully updated`;
+      return `Your password has been successfully updated`;
     } catch (e) {
       console.error(e);
       throw new Error(e.message);

@@ -61,11 +61,15 @@ export class JwtService extends NestJwtService {
       });
 
       return decoded;
-    } catch (e) {
+    } catch (e: any) {
       if (e.name === 'TokenExpiredError') {
-        throw new UnauthorizedException('Token has expired');
+        throw new UnauthorizedException(
+          'The reset password link has expired. Please click the link below to reset your password again.',
+        );
       } else {
-        throw new UnauthorizedException('Invalid token');
+        throw new UnauthorizedException(
+          'Invalid reset password token. Please use the link provided to reset your password.',
+        );
       }
     }
   }
