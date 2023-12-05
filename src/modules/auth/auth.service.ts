@@ -28,20 +28,20 @@ export class AuthService {
     const isProduction = process.env.MODE === 'PRODUCTION';
 
     response.cookie('session', tokens['access_token'], {
-      // maxAge: 60 * 30 * 1000, // 30 minutes
+      maxAge: 60 * 30 * 1000, // 30 minutes
       // httpOnly: !isProduction,
-      signed: true,
-      sameSite: 'none',
-      domain: process.env.FRONTEND_BASE_URL,
+      // signed: true,
+      // sameSite: 'none',
+      // domain: process.env.FRONTEND_BASE_URL,
       // secure: isProduction,
     });
 
     response.cookie('session-refresh', tokens['refresh_token'], {
-      // maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
+      maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
       // httpOnly: !isProduction,
-      signed: true,
-      sameSite: 'none',
-      domain: process.env.FRONTEND_BASE_URL,
+      // signed: true,
+      // sameSite: 'none',
+      // domain: process.env.FRONTEND_BASE_URL,
       // secure: isProduction,
     });
   }
@@ -67,7 +67,7 @@ export class AuthService {
       try {
         return response
           .status(HttpStatus.OK)
-          .redirect(`${process.env.FRONTEND_BASE_URL}`);
+          .redirect(process.env.FRONTEND_BASE_URL);
       } catch (e) {
         console.error(e);
         throw new Error(e.message);
@@ -90,7 +90,7 @@ export class AuthService {
     try {
       return response
         .status(HttpStatus.OK)
-        .redirect(`${process.env.FRONTEND_BASE_URL}`);
+        .redirect(process.env.FRONTEND_BASE_URL);
     } catch (e) {
       console.error(e);
       throw new Error(e.message);
