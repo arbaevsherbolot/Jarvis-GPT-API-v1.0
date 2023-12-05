@@ -31,7 +31,10 @@ export class AuthController {
   @Get('google/callback')
   @HttpCode(HttpStatus.OK)
   @UseGuards(GoogleOauthGuard)
-  async googleCallback(@Req() request: Request, @Res() response: Response) {
+  async googleCallback(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
     return await this.authService.oauth(request, response);
   }
 
@@ -39,27 +42,39 @@ export class AuthController {
   @Get('github/callback')
   @HttpCode(HttpStatus.OK)
   @UseGuards(GitHubOauthGuard)
-  async githubCallback(@Req() request: Request, @Res() response: Response) {
+  async githubCallback(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
     return await this.authService.oauth(request, response);
   }
 
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() dto: LoginDto, @Res() response: Response) {
+  async login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
     return await this.authService.login(dto, response);
   }
 
   @Public()
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  async register(@Body() dto: RegisterDto, @Res() response: Response) {
+  async register(
+    @Body() dto: RegisterDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
     return await this.authService.register(dto, response);
   }
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  async logout(@GetCurrentUserId() userId: number, @Res() response: Response) {
+  async logout(
+    @GetCurrentUserId() userId: number,
+    @Res({ passthrough: true }) response: Response,
+  ) {
     return await this.authService.logout(userId, response);
   }
 
