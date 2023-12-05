@@ -22,7 +22,7 @@ async function start() {
   app.useGlobalPipes(new ValidationPipe());
 
   //Set the Cookie Parser
-  app.use(cookieParser());
+  app.use(cookieParser('SECRET_KEY'));
 
   // Start the Nest.js application and log the server's address
   await app.listen(port, () =>
