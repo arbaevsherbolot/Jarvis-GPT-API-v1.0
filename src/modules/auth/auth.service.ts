@@ -67,7 +67,7 @@ export class AuthService {
       try {
         return response
           .status(HttpStatus.OK)
-          .redirect(process.env.FRONTEND_BASE_URL);
+          .redirect(`${process.env.FRONTEND_BASE_URL}`);
       } catch (e) {
         console.error(e);
         throw new Error(e.message);
@@ -90,7 +90,7 @@ export class AuthService {
     try {
       return response
         .status(HttpStatus.OK)
-        .redirect(process.env.FRONTEND_BASE_URL);
+        .redirect(`${process.env.FRONTEND_BASE_URL}`);
     } catch (e) {
       console.error(e);
       throw new Error(e.message);
