@@ -15,6 +15,7 @@ const cookieExtractor = (req: any) => {
   return token;
 };
 
+//Declare JWT Access Token strategy
 @Injectable()
 export class AccessTokenStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(private userService: UsersService) {
