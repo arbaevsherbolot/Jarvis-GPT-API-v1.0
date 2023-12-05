@@ -40,6 +40,12 @@ export class AuthService {
     });
   }
 
+  private async clearCookies(response: Response) {
+    response.clearCookie('session');
+    response.clearCookie('session-refresh');
+    response.status(200).json({ success: true });
+  }
+
   async googleAuth(request: Request, response: Response) {
     const { firstName, lastName, email } = request.user as User;
 
@@ -141,8 +147,7 @@ export class AuthService {
     }
 
     try {
-      response.clearCookie('session');
-      response.clearCookie('session-refresh');
+      await this.clearCookies(response);
     } catch (e) {
       console.error(e);
       throw new Error(e.message);
