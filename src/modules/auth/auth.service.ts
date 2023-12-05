@@ -31,6 +31,7 @@ export class AuthService {
       maxAge: 60 * 30 * 1000, // 30 minutes
       httpOnly: !isProduction,
       signed: true,
+      sameSite: 'none',
       domain: process.env.FRONTEND_BASE_URL,
       secure: isProduction,
     });
@@ -39,6 +40,7 @@ export class AuthService {
       maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
       httpOnly: !isProduction,
       signed: true,
+      sameSite: 'none',
       domain: process.env.FRONTEND_BASE_URL,
       secure: isProduction,
     });
