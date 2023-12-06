@@ -31,7 +31,7 @@ export class AuthService {
       maxAge: 60 * 30 * 1000, // 30 minutes
       sameSite: 'lax',
       secure: isProduction,
-      domain: isProduction ? 'jarvis-gpt-v1.vercel.app' : undefined,
+      domain: isProduction ? '.vercel.app' : undefined,
       httpOnly: true,
     });
 
@@ -39,7 +39,7 @@ export class AuthService {
       maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
       sameSite: 'lax',
       secure: isProduction,
-      domain: isProduction ? 'jarvis-gpt-v1.vercel.app' : undefined,
+      domain: isProduction ? '.vercel.app' : undefined,
       httpOnly: true,
     });
   }
