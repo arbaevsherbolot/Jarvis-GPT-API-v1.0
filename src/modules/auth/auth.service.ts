@@ -30,20 +30,20 @@ export class AuthService {
     response.cookie('session', tokens['access_token'], {
       maxAge: 60 * 30 * 1000, // 30 minutes
       sameSite: 'none',
-      secure: true,
+      secure: !isProduction,
       domain: 'jarvis-gpt-v1.vercel.app',
       path: '/',
-      // httpOnly: !isProduction,
+      httpOnly: true,
       // signed: true,
     });
 
     response.cookie('session-refresh', tokens['refresh_token'], {
       maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
       sameSite: 'none',
-      secure: true,
+      secure: !isProduction,
       domain: 'jarvis-gpt-v1.vercel.app',
       path: '/',
-      // httpOnly: !isProduction,
+      httpOnly: true,
       // signed: true,
     });
   }
