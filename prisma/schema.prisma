@@ -36,6 +36,7 @@ model User {
   password            String
   refreshToken        String?
   resetPasswordSecret String?
+  verificationToken   String?
   isActive            Boolean    @default(true)
   isVerified          Boolean    @default(false)
   lastVisit           DateTime   @default(now())

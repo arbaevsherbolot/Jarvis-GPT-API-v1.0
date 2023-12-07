@@ -1,9 +1,16 @@
-import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import {
-  EditMeDto,
-  ForgotPasswordDto,
+  BadRequestException,
+  ConflictException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import {
   LoginDto,
   RegisterDto,
+  EditMeDto,
+  EmailVerificationDto,
+  ForgotPasswordDto,
   ResetPasswordDto,
 } from './dto';
 import { UsersService } from '../users/users.service';
@@ -45,9 +52,21 @@ export class AuthService {
   async oauth(request: Request, response: Response) {
     const { firstName, lastName, email } = request.user as User;
 
-    const existUser = await this.usersService.findByEmail(email);
+    const existUser = await this.prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
 
     if (existUser) {
+      if (!existUser.isVerified) {
+        await this.sendVerificationCode(
+          existUser.id,
+          existUser.email,
+          existUser.firstName,
+        );
+      }
+
       const tokens = await this.jwt.generateTokens(existUser.id);
       await Promise.all([
         this.updateRefreshTokenHash(existUser.id, tokens.refresh_token),
@@ -73,6 +92,7 @@ export class AuthService {
 
     const tokens = await this.jwt.generateTokens(user.id);
     await Promise.all([
+      this.sendVerificationCode(user.id, user.email, user.firstName),
       this.updateRefreshTokenHash(user.id, tokens.refresh_token),
       this.setCookies(response, tokens),
     ]);
@@ -97,6 +117,10 @@ export class AuthService {
       throw new UnauthorizedException('Incorrect password');
     }
 
+    if (!user.isVerified) {
+      await this.sendVerificationCode(user.id, user.email, user.firstName);
+    }
+
     const tokens = await this.jwt.generateTokens(user.id);
     await Promise.all([
       this.updateRefreshTokenHash(user.id, tokens.refresh_token),
@@ -116,6 +140,7 @@ export class AuthService {
 
     const tokens = await this.jwt.generateTokens(user.id);
     await Promise.all([
+      this.sendVerificationCode(user.id, user.email, user.firstName),
       this.updateRefreshTokenHash(user.id, tokens.refresh_token),
       this.setCookies(response, tokens),
     ]);
@@ -194,6 +219,42 @@ export class AuthService {
     }
   }
 
+  async emailVerification(
+    userId: number,
+    dto: EmailVerificationDto,
+    response: Response,
+  ) {
+    const { code } = dto;
+
+    const user = await this.usersService.findById(userId);
+
+    if (user.isVerified) {
+      throw new BadRequestException('User has already been verified');
+    }
+
+    const comparedCode = await compare(code, user.verificationToken);
+
+    if (!comparedCode) {
+      throw new ConflictException(`Code doesn't match`);
+    }
+
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        isVerified: true,
+      },
+    });
+
+    try {
+      return response.status(HttpStatus.OK).json({ success: true });
+    } catch (e) {
+      console.error(e);
+      throw new Error(e.message);
+    }
+  }
+
   async forgotPassword(dto: ForgotPasswordDto) {
     const { email } = dto;
 
@@ -202,24 +263,25 @@ export class AuthService {
     const token = await this.jwt.generateResetPasswordSecret(user.id);
     const forgotLink = `${process.env.FRONTEND_BASE_URL}/password/reset/?token=${token}`;
 
-    await this.prisma.user.update({
-      where: {
-        id: user.id,
-      },
-      data: {
-        resetPasswordSecret: token,
-      },
-    });
-
-    await this.mailerService.sendMail({
-      to: user.email,
-      from: process.env.MAILER_USER,
-      subject: 'Password reset',
-      html: `
-          <h2>Hey ${user.firstName}</h2>
-          <p>To recover your password, please use this <a target="_self" href="${forgotLink}">link</a>.</p>
-      `,
-    });
+    await Promise.all([
+      this.prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          resetPasswordSecret: token,
+        },
+      }),
+      this.mailerService.sendMail({
+        to: user.email,
+        from: process.env.MAILER_USER,
+        subject: 'Password reset',
+        html: `
+            <h2>Hey ${user.firstName}</h2>
+            <p>To recover your password, please use this <a target="_self" href="${forgotLink}">link</a>.</p>
+        `,
+      }),
+    ]);
 
     try {
       return `Password reset link has been sent to ${user.email}`;
@@ -240,7 +302,7 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    const user = await this.prisma.user.update({
+    await this.prisma.user.update({
       where: {
         id: userId,
       },
@@ -283,6 +345,40 @@ export class AuthService {
         },
       });
     }
+  }
+
+  async generateVerificationCode(): Promise<string> {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    return code;
+  }
+
+  async sendVerificationCode(
+    userId: number,
+    userEmail: string,
+    userName: string,
+  ) {
+    const code = await this.generateVerificationCode();
+    const verificationToken = await hash(code);
+
+    await Promise.all([
+      this.prisma.user.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          verificationToken,
+        },
+      }),
+      this.mailerService.sendMail({
+        to: userEmail,
+        from: process.env.MAILER_USER,
+        subject: 'Verification Code',
+        html: `
+            <h2>Hey ${userName}</h2>
+            <p>Your verification code is <strong>${code}</strong>.</p>
+        `,
+      }),
+    ]);
   }
 
   async updateRefreshTokenHash(userId: number, refreshToken: string) {

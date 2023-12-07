@@ -14,6 +14,7 @@ import {
   LoginDto,
   RegisterDto,
   EditMeDto,
+  EmailVerificationDto,
   ResetPasswordDto,
   ForgotPasswordDto,
 } from './dto';
@@ -92,6 +93,16 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async editMe(@GetCurrentUserId() userId: number, @Body() dto: EditMeDto) {
     return await this.authService.editMe(userId, dto);
+  }
+
+  @Post('email-verification')
+  @HttpCode(HttpStatus.OK)
+  async emailVerification(
+    @GetCurrentUserId() userId: number,
+    @Body() dto: EmailVerificationDto,
+    @Res() response: Response,
+  ) {
+    return await this.authService.emailVerification(userId, dto, response);
   }
 
   @Public()

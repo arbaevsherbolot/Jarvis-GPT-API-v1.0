@@ -83,6 +83,14 @@ export class EditMeDto {
   phone?: string;
 }
 
+export class EmailVerificationDto {
+  @IsNotEmpty({ message: 'Code cannot be empty' })
+  @IsString({ message: 'Code must be a string' })
+  @MinLength(6, { message: 'Code must be exactly six digits' })
+  @MaxLength(6, { message: 'Code must be exactly six digits' })
+  code: string;
+}
+
 export class ForgotPasswordDto {
   @IsNotEmpty({ message: 'Email cannot be empty' })
   @IsEmail({}, { message: 'Invalid email format' })

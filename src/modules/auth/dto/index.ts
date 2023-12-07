@@ -1,1 +1,1 @@
-export { LoginDto, RegisterDto, EditMeDto, ForgotPasswordDto, ResetPasswordDto } from './auth.dto';
+export { LoginDto, RegisterDto, EditMeDto, EmailVerificationDto, ForgotPasswordDto, ResetPasswordDto } from './auth.dto';
