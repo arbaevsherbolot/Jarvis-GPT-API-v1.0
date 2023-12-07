@@ -40,7 +40,7 @@ export class AuthService {
         sameSite: 'strict',
         secure: true,
         httpOnly: true,
-        domain: '.vercel.app',
+        domain: 'https://.vercel.app',
         path: '/',
       })
       .cookie('session-refresh', tokens['refresh_token'], {
@@ -48,7 +48,7 @@ export class AuthService {
         sameSite: 'strict',
         secure: true,
         httpOnly: true,
-        domain: '.vercel.app',
+        domain: 'https://.vercel.app',
         path: '/',
       })
       .status(HttpStatus.OK)
