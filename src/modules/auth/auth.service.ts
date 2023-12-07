@@ -39,7 +39,7 @@ export class AuthService {
       sameSite: 'none',
       secure: true,
       httpOnly: true,
-      domain: process.env.FRONTEND_BASE_URL,
+      domain: 'https://jarvis-gpt-v1.vercel.app',
     });
 
     response.cookie('session-refresh', tokens['refresh_token'], {
@@ -47,7 +47,7 @@ export class AuthService {
       sameSite: 'none',
       secure: true,
       httpOnly: true,
-      domain: process.env.FRONTEND_BASE_URL,
+      domain: 'https://jarvis-gpt-v1.vercel.app',
     });
   }
 
