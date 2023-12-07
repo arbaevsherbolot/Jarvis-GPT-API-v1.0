@@ -39,7 +39,7 @@ export class AuthService {
       sameSite: 'none',
       secure: true,
       httpOnly: true,
-      domain: 'jarvis-gpt-v1.vercel.app',
+      domain: '.vercel.app',
       path: '/',
     });
 
@@ -48,7 +48,7 @@ export class AuthService {
       sameSite: 'none',
       secure: true,
       httpOnly: true,
-      domain: 'jarvis-gpt-v1.vercel.app',
+      domain: '.vercel.app',
       path: '/',
     });
   }
