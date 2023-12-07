@@ -36,10 +36,18 @@ export class AuthService {
 
     response.cookie('session', tokens['access_token'], {
       maxAge: 60 * 30 * 1000, // 30 minutes
+      sameSite: 'none',
+      secure: true,
+      httpOnly: true,
+      domain: process.env.FRONTEND_BASE_URL,
     });
 
     response.cookie('session-refresh', tokens['refresh_token'], {
       maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
+      sameSite: 'none',
+      secure: true,
+      httpOnly: true,
+      domain: process.env.FRONTEND_BASE_URL,
     });
   }
 

@@ -9,6 +9,17 @@ async function start() {
   const corsOptions: CorsOptions = {
     origin: 'https://jarvis-gpt-v1.vercel.app',
     credentials: true,
+    allowedHeaders: [
+      'Origin',
+      'X-Requested-With',
+      'Content-Type',
+      'Accept',
+      'Authorization',
+      'X-HTTP-Method-Override',
+      'Set-Cookie',
+      'Cookie',
+    ],
+    exposedHeaders: ['set-cookie'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   };
 
