@@ -2,7 +2,6 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
-import session from 'express-session';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 
 async function start() {
@@ -35,21 +34,6 @@ async function start() {
 
   //Set the Cookie Parser
   app.use(cookieParser());
-
-  // Set up the Express session middleware
-  app.use(
-    session({
-      secret: 'SECRET',
-      resave: false,
-      saveUninitialized: false,
-      cookie: {
-        sameSite: 'none',
-        secure: true,
-        httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 24 * 7,
-      },
-    }),
-  );
 
   // Start the Nest.js application and log the server's address
   await app.listen(port, () =>

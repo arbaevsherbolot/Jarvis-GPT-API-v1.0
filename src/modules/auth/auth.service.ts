@@ -40,6 +40,7 @@ export class AuthService {
       secure: true,
       httpOnly: true,
       domain: 'jarvis-gpt-v1.vercel.app',
+      path: '/',
     });
 
     response.cookie('session-refresh', tokens['refresh_token'], {
@@ -48,6 +49,7 @@ export class AuthService {
       secure: true,
       httpOnly: true,
       domain: 'jarvis-gpt-v1.vercel.app',
+      path: '/',
     });
   }
 
