@@ -34,29 +34,33 @@ export class AuthService {
   private async setCookies(response: Response, tokens: any) {
     // const isProduction = process.env.MODE === 'PRODUCTION';
 
-    response.cookie('session', tokens['access_token'], {
-      maxAge: 60 * 30 * 1000, // 30 minutes
-      sameSite: 'none',
-      secure: true,
-      httpOnly: true,
-      domain: 'vercel.app',
-      path: '/',
-    });
-
-    response.cookie('session-refresh', tokens['refresh_token'], {
-      maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
-      sameSite: 'none',
-      secure: true,
-      httpOnly: true,
-      domain: 'vercel.app',
-      path: '/',
-    });
+    return response
+      .cookie('session', tokens['access_token'], {
+        maxAge: 60 * 30 * 1000, // 30 minutes
+        sameSite: 'none',
+        secure: true,
+        httpOnly: true,
+        domain: '.vercel.app',
+        path: '/',
+      })
+      .cookie('session-refresh', tokens['refresh_token'], {
+        maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
+        sameSite: 'none',
+        secure: true,
+        httpOnly: true,
+        domain: '.vercel.app',
+        path: '/',
+      })
+      .status(HttpStatus.OK)
+      .redirect(process.env.FRONTEND_BASE_URL);
   }
 
   private async clearCookies(response: Response) {
-    response.clearCookie('session');
-    response.clearCookie('session-refresh');
-    response.status(200).json({ success: true });
+    return response
+      .clearCookie('session')
+      .clearCookie('session-refresh')
+      .status(200)
+      .json({ success: true });
   }
 
   async oauth(request: Request, response: Response) {
@@ -84,9 +88,7 @@ export class AuthService {
       ]);
 
       try {
-        return response
-          .status(HttpStatus.OK)
-          .redirect(process.env.FRONTEND_BASE_URL);
+        return response;
       } catch (e) {
         console.error(e);
         throw new Error(e.message);
@@ -100,17 +102,13 @@ export class AuthService {
       password: 'wedevx2023',
     });
 
-    const tokens = await this.jwt.generateTokens(user.id);
-    await Promise.all([
-      this.sendVerificationCode(user.id, user.email, user.firstName),
-      this.updateRefreshTokenHash(user.id, tokens.refresh_token),
-      this.setCookies(response, tokens),
-    ]);
-
     try {
-      return response
-        .status(HttpStatus.OK)
-        .redirect(process.env.FRONTEND_BASE_URL);
+      const tokens = await this.jwt.generateTokens(user.id);
+      await Promise.all([
+        this.sendVerificationCode(user.id, user.email, user.firstName),
+        this.updateRefreshTokenHash(user.id, tokens.refresh_token),
+        this.setCookies(response, tokens),
+      ]);
     } catch (e) {
       console.error(e);
       throw new Error(e.message);
@@ -131,14 +129,12 @@ export class AuthService {
       await this.sendVerificationCode(user.id, user.email, user.firstName);
     }
 
-    const tokens = await this.jwt.generateTokens(user.id);
-    await Promise.all([
-      this.updateRefreshTokenHash(user.id, tokens.refresh_token),
-      this.setCookies(response, tokens),
-    ]);
-
     try {
-      return response.status(HttpStatus.OK).json(user);
+      const tokens = await this.jwt.generateTokens(user.id);
+      await Promise.all([
+        this.updateRefreshTokenHash(user.id, tokens.refresh_token),
+        this.setCookies(response, tokens),
+      ]);
     } catch (e) {
       console.error(e);
       throw new Error(e.message);
@@ -148,15 +144,13 @@ export class AuthService {
   async register(dto: RegisterDto, response: Response) {
     const user = await this.usersService.createUser(dto);
 
-    const tokens = await this.jwt.generateTokens(user.id);
-    await Promise.all([
-      this.sendVerificationCode(user.id, user.email, user.firstName),
-      this.updateRefreshTokenHash(user.id, tokens.refresh_token),
-      this.setCookies(response, tokens),
-    ]);
-
     try {
-      return response.status(HttpStatus.CREATED).json(user);
+      const tokens = await this.jwt.generateTokens(user.id);
+      await Promise.all([
+        this.sendVerificationCode(user.id, user.email, user.firstName),
+        this.updateRefreshTokenHash(user.id, tokens.refresh_token),
+        this.setCookies(response, tokens),
+      ]);
     } catch (e) {
       console.error(e);
       throw new Error(e.message);
