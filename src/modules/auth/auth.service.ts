@@ -51,7 +51,7 @@ export class AuthService {
         domain: '.vercel.app',
         path: '/',
       })
-      .status(HttpStatus.OK)
+      .status(HttpStatus.FOUND)
       .redirect('https://jarvis-gpt-v1.vercel.app');
   }
 

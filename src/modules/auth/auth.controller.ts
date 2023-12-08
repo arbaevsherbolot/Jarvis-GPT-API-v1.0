@@ -30,7 +30,7 @@ export class AuthController {
 
   @Public()
   @Get('google/callback')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.FOUND)
   @UseGuards(GoogleOauthGuard)
   async googleCallback(
     @Req() request: Request,
@@ -41,7 +41,7 @@ export class AuthController {
 
   @Public()
   @Get('github/callback')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.FOUND)
   @UseGuards(GitHubOauthGuard)
   async githubCallback(
     @Req() request: Request,
