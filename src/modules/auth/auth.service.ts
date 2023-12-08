@@ -37,22 +37,22 @@ export class AuthService {
     return response
       .cookie('session', tokens['access_token'], {
         maxAge: 60 * 30 * 1000, // 30 minutes
-        sameSite: 'lax',
+        sameSite: 'strict',
         secure: true,
         httpOnly: true,
-        domain: 'jarvis-gpt-api.vercel.app',
+        domain: '.vercel.app',
         path: '/',
       })
       .cookie('session-refresh', tokens['refresh_token'], {
         maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
-        sameSite: 'lax',
+        sameSite: 'strict',
         secure: true,
         httpOnly: true,
-        domain: 'jarvis-gpt-api.vercel.app',
+        domain: '.vercel.app',
         path: '/',
       })
       .status(HttpStatus.OK)
-      .redirect(process.env.FRONTEND_BASE_URL);
+      .redirect('https://jarvis-gpt-v1.vercel.app');
   }
 
   private async clearCookies(response: Response) {
