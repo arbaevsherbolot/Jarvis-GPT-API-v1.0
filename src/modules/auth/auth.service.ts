@@ -52,15 +52,7 @@ export class AuthService {
         ...cookieConfig,
       });
 
-    response.header(
-      'Access-Control-Allow-Origin',
-      process.env.FRONTEND_BASE_URL,
-    );
-    response.header('Access-Control-Allow-Credentials', 'true');
-
-    return response
-      .status(HttpStatus.OK)
-      .redirect(process.env.FRONTEND_BASE_URL);
+    return response.status(HttpStatus.OK).end();
   }
 
   private async clearCookies(response: Response) {
