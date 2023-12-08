@@ -34,7 +34,7 @@ export class AuthService {
   private async setCookies(response: Response, tokens: any) {
     // const isProduction = process.env.MODE === 'PRODUCTION';
 
-    response
+    return response
       .cookie('session', tokens['access_token'], {
         maxAge: 60 * 30 * 1000, // 30 minutes
         sameSite: 'lax',
