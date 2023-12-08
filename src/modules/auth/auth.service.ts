@@ -32,24 +32,24 @@ export class AuthService {
   ) {}
 
   private async setCookies(response: Response, tokens: any) {
-    // const isProduction = process.env.MODE === 'PRODUCTION';
+    const isProduction = process.env.MODE === 'PRODUCTION';
 
     return response
       .cookie('session', tokens['access_token'], {
         maxAge: 60 * 30 * 1000, // 30 minutes
-        // sameSite: 'strict',
-        secure: true,
-        httpOnly: true,
+        secure: isProduction,
+        httpOnly: isProduction,
+        // sameSite: 'lax',
         // domain: '.vercel.app',
-        // path: '/',
+        path: '/',
       })
       .cookie('session-refresh', tokens['refresh_token'], {
         maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
-        // sameSite: 'strict',
-        secure: true,
-        httpOnly: true,
+        secure: isProduction,
+        httpOnly: isProduction,
+        // sameSite: 'lax',
         // domain: '.vercel.app',
-        // path: '/',
+        path: '/',
       });
   }
 
