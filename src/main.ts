@@ -7,7 +7,7 @@ import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.int
 async function start() {
   //Set CORS options
   const corsOptions: CorsOptions = {
-    origin: 'https://jarvis-gpt-v1.vercel.app',
+    origin: '*',
     credentials: true,
     allowedHeaders: [
       'Origin',
