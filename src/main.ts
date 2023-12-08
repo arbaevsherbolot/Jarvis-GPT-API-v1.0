@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 
 async function start() {
-  //Set CORS options
+  // Set CORS options
   const corsOptions: CorsOptions = {
     origin: '*',
     credentials: true,
@@ -26,13 +26,10 @@ async function start() {
   const app = await NestFactory.create(AppModule, { cors: corsOptions });
   const port = process.env.PORT || 3000;
 
-  //Set CORS configuration
-  app.enableCors(corsOptions);
-
-  //Set the global validation pipes for our server
+  // Set the global validation pipes for our server
   app.useGlobalPipes(new ValidationPipe());
 
-  //Set the Cookie Parser
+  // Set the Cookie Parser
   app.use(cookieParser());
 
   // Start the Nest.js application and log the server's address
