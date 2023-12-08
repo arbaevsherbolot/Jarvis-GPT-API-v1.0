@@ -7,7 +7,7 @@ import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.int
 async function start() {
   //Set CORS options
   const corsOptions: CorsOptions = {
-    origin: '*',
+    origin: 'https://jarvis-gpt-v1.vercel.app',
     credentials: true,
     allowedHeaders: [
       'Origin',
@@ -25,6 +25,9 @@ async function start() {
 
   const app = await NestFactory.create(AppModule, { cors: corsOptions });
   const port = process.env.PORT || 3000;
+
+  //Set CORS configuration
+  app.enableCors(corsOptions);
 
   //Set the global validation pipes for our server
   app.useGlobalPipes(new ValidationPipe());
