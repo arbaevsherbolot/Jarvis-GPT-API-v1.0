@@ -20,8 +20,8 @@ import {
 } from './dto';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
-import { GetCurrentUserId, Public } from './common/decorators';
-import { GoogleOauthGuard } from './common/guards';
+import { Public, GetCurrentUserId, GetCurrentUser } from './common/decorators';
+import { GoogleOauthGuard, RefreshTokenGuard } from './common/guards';
 import { GitHubOauthGuard } from './common/guards/github-oauth.guard';
 
 @Controller()
@@ -117,5 +117,17 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto);
+  }
+
+  @Public()
+  @Post('refresh-token')
+  @UseGuards(RefreshTokenGuard)
+  @HttpCode(HttpStatus.OK)
+  async refresh(
+    @GetCurrentUser('refreshToken') refreshToken: string,
+    @GetCurrentUserId() userId: number,
+    @Res() response: Response,
+  ) {
+    return await this.authService.refreshToken(userId, refreshToken, response);
   }
 }

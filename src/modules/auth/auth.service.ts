@@ -41,7 +41,7 @@ export class AuthService {
         httpOnly: isProduction,
         // sameSite: 'lax',
         // domain: '.vercel.app',
-        path: '/',
+        // path: '/',
       })
       .cookie('session-refresh', tokens['refresh_token'], {
         maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
@@ -49,7 +49,7 @@ export class AuthService {
         httpOnly: isProduction,
         // sameSite: 'lax',
         // domain: '.vercel.app',
-        path: '/',
+        // path: '/',
       });
   }
 
@@ -113,7 +113,7 @@ export class AuthService {
       return response
         .status(HttpStatus.OK)
         .redirect(process.env.FRONTEND_BASE_URL);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
     }
@@ -141,7 +141,7 @@ export class AuthService {
 
     try {
       return response.status(HttpStatus.OK).json(user);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
     }
@@ -159,7 +159,7 @@ export class AuthService {
 
     try {
       return response.status(HttpStatus.CREATED).json(user);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
     }
@@ -181,7 +181,7 @@ export class AuthService {
 
     try {
       await this.clearCookies(response);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
     }
@@ -200,7 +200,7 @@ export class AuthService {
 
     try {
       return response.status(HttpStatus.OK).json(user);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
     }
@@ -225,7 +225,7 @@ export class AuthService {
 
     try {
       return updatedUser;
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
     }
@@ -261,7 +261,7 @@ export class AuthService {
 
     try {
       return response.status(HttpStatus.OK).json({ success: true });
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
     }
@@ -297,7 +297,7 @@ export class AuthService {
 
     try {
       return `Password reset link has been sent to ${user.email}`;
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
     }
@@ -325,7 +325,30 @@ export class AuthService {
 
     try {
       return `Your password has been successfully updated`;
-    } catch (e) {
+    } catch (e: any) {
+      console.error(e);
+      throw new Error(e.message);
+    }
+  }
+
+  async refreshToken(userId: number, token: string, response: Response) {
+    const user = await this.usersService.findById(userId);
+
+    const comparedToken = await this.jwt.compareToken(token, user.refreshToken);
+
+    if (!comparedToken) {
+      throw new UnauthorizedException('Invalid token');
+    }
+
+    const tokens = await this.jwt.generateTokens(user.id);
+    await Promise.all([
+      this.updateRefreshTokenHash(user.id, tokens.refresh_token),
+      this.setCookies(response, tokens),
+    ]);
+
+    try {
+      return response.status(HttpStatus.OK).json(user);
+    } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
     }
@@ -405,7 +428,7 @@ export class AuthService {
           refreshToken: hashedToken,
         },
       });
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
     }

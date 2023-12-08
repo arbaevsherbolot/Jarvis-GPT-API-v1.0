@@ -57,7 +57,7 @@ export class ImageService {
 
     try {
       return image;
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
     }
@@ -76,7 +76,7 @@ export class ImageService {
 
     try {
       return image;
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
     }
@@ -91,7 +91,7 @@ export class ImageService {
 
     try {
       return images;
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
     }
@@ -114,7 +114,7 @@ export class ImageService {
 
     try {
       return url;
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
     }

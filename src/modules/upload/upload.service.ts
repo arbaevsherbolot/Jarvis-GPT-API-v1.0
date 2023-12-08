@@ -32,7 +32,7 @@ export class UploadService {
 
     try {
       return updatedUser.photo;
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
     }

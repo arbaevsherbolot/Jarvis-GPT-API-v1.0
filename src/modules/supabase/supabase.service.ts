@@ -49,7 +49,7 @@ export class SupabaseService {
         .upload(filename, buffer, { upsert: true });
 
       return data.path;
-    } catch (e) {
+    } catch (e: any) {
       console.error('Error uploading file to Supabase:', e.message);
       throw new ServiceUnavailableException('Failed to upload file');
     }

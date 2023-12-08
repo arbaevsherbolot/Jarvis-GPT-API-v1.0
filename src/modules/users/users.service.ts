@@ -72,7 +72,7 @@ export class UsersService {
         count: users.length,
         users,
       };
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
     }
@@ -91,7 +91,7 @@ export class UsersService {
 
     try {
       return dbUser;
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
     }
@@ -129,7 +129,7 @@ export class UsersService {
 
     try {
       return user;
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
     }
@@ -157,7 +157,7 @@ export class UsersService {
 
     try {
       return user;
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
     }
@@ -185,7 +185,7 @@ export class UsersService {
 
     try {
       return user;
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
     }
@@ -213,7 +213,7 @@ export class UsersService {
 
     try {
       return user;
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
     }
@@ -241,7 +241,7 @@ export class UsersService {
 
     try {
       return user;
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
     }

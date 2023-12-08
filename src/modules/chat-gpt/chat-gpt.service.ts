@@ -53,7 +53,7 @@ export class ChatGptService {
       );
 
       return content;
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new ServiceUnavailableException('Failed request to ChatGPT');
     }
@@ -74,7 +74,7 @@ export class ChatGptService {
       const audioUrl = await this.supabaseService.getUrl('/audios', path);
 
       return audioUrl;
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new ServiceUnavailableException('Failed to synthesize speech');
     }
@@ -98,7 +98,7 @@ export class ChatGptService {
       });
 
       return whisperResponse.text;
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new ServiceUnavailableException('Failed to transcribe audio');
     }
@@ -126,7 +126,7 @@ export class ChatGptService {
       );
 
       return content;
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new ServiceUnavailableException('Unable to recognize image');
     }
@@ -141,7 +141,7 @@ export class ChatGptService {
       });
 
       return data[0].url;
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new ServiceUnavailableException('Failed to generate image');
     }

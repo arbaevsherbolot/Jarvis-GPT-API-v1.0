@@ -65,7 +65,7 @@ export class SpeechToTextService {
       );
 
       return { message, reply };
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
     }
@@ -77,7 +77,7 @@ export class SpeechToTextService {
 
     try {
       return chat.messages;
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
     }
