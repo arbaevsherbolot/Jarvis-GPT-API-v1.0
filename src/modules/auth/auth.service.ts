@@ -37,18 +37,18 @@ export class AuthService {
     return response
       .cookie('session', tokens['access_token'], {
         maxAge: 60 * 30 * 1000, // 30 minutes
-        sameSite: 'strict',
+        sameSite: 'lax',
         secure: true,
         httpOnly: true,
-        domain: 'https://.vercel.app',
+        domain: '.vercel.app',
         path: '/',
       })
       .cookie('session-refresh', tokens['refresh_token'], {
         maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
-        sameSite: 'strict',
+        sameSite: 'lax',
         secure: true,
         httpOnly: true,
-        domain: 'https://.vercel.app',
+        domain: '.vercel.app',
         path: '/',
       })
       .status(HttpStatus.OK)
