@@ -40,7 +40,7 @@ export class AuthService {
         sameSite: 'lax',
         secure: true,
         httpOnly: true,
-        domain: '.vercel.app',
+        domain: 'jarvis-gpt-api.vercel.app',
         path: '/',
       })
       .cookie('session-refresh', tokens['refresh_token'], {
@@ -48,7 +48,7 @@ export class AuthService {
         sameSite: 'lax',
         secure: true,
         httpOnly: true,
-        domain: '.vercel.app',
+        domain: 'jarvis-gpt-api.vercel.app',
         path: '/',
       })
       .status(HttpStatus.OK)

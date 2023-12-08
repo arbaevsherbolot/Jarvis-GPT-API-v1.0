@@ -19,15 +19,12 @@ async function start() {
       'Set-Cookie',
       'Cookie',
     ],
-    // exposedHeaders: ['set-cookie'],
+    exposedHeaders: ['set-cookie'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   };
 
   const app = await NestFactory.create(AppModule, { cors: corsOptions });
   const port = process.env.PORT || 3000;
-
-  //Set CORS configuration
-  // app.enableCors(corsOptions);
 
   //Set the global validation pipes for our server
   app.useGlobalPipes(new ValidationPipe());
