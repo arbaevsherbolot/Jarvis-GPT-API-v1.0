@@ -34,25 +34,23 @@ export class AuthService {
   private async setCookies(response: Response, tokens: any) {
     // const isProduction = process.env.MODE === 'PRODUCTION';
 
-    const cookieConfig = {
-      sameSite: true,
-      secure: true,
-      httpOnly: true,
-      domain: '.vercel.app',
-      path: '/',
-    };
-
     response
       .cookie('session', tokens['access_token'], {
         maxAge: 60 * 30 * 1000, // 30 minutes
-        ...cookieConfig,
+        sameSite: 'lax',
+        secure: true,
+        httpOnly: true,
+        domain: 'jarvis-gpt-v1.vercel.app',
+        path: '/',
       })
       .cookie('session-refresh', tokens['refresh_token'], {
         maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
-        ...cookieConfig,
+        sameSite: 'lax',
+        secure: true,
+        httpOnly: true,
+        domain: 'jarvis-gpt-v1.vercel.app',
+        path: '/',
       });
-
-    return response.status(HttpStatus.OK).end();
   }
 
   private async clearCookies(response: Response) {
@@ -88,7 +86,9 @@ export class AuthService {
       ]);
 
       try {
-        return response;
+        return response
+          .status(HttpStatus.OK)
+          .redirect(process.env.FRONTEND_BASE_URL);
       } catch (e) {
         console.error(e);
         throw new Error(e.message);
@@ -102,13 +102,17 @@ export class AuthService {
       password: 'wedevx2023',
     });
 
+    const tokens = await this.jwt.generateTokens(user.id);
+    await Promise.all([
+      this.sendVerificationCode(user.id, user.email, user.firstName),
+      this.updateRefreshTokenHash(user.id, tokens.refresh_token),
+      this.setCookies(response, tokens),
+    ]);
+
     try {
-      const tokens = await this.jwt.generateTokens(user.id);
-      await Promise.all([
-        this.sendVerificationCode(user.id, user.email, user.firstName),
-        this.updateRefreshTokenHash(user.id, tokens.refresh_token),
-        this.setCookies(response, tokens),
-      ]);
+      return response
+        .status(HttpStatus.OK)
+        .redirect(process.env.FRONTEND_BASE_URL);
     } catch (e) {
       console.error(e);
       throw new Error(e.message);
@@ -129,12 +133,14 @@ export class AuthService {
       await this.sendVerificationCode(user.id, user.email, user.firstName);
     }
 
+    const tokens = await this.jwt.generateTokens(user.id);
+    await Promise.all([
+      this.updateRefreshTokenHash(user.id, tokens.refresh_token),
+      this.setCookies(response, tokens),
+    ]);
+
     try {
-      const tokens = await this.jwt.generateTokens(user.id);
-      await Promise.all([
-        this.updateRefreshTokenHash(user.id, tokens.refresh_token),
-        this.setCookies(response, tokens),
-      ]);
+      return response.status(HttpStatus.OK).json(user);
     } catch (e) {
       console.error(e);
       throw new Error(e.message);
@@ -144,13 +150,15 @@ export class AuthService {
   async register(dto: RegisterDto, response: Response) {
     const user = await this.usersService.createUser(dto);
 
+    const tokens = await this.jwt.generateTokens(user.id);
+    await Promise.all([
+      this.sendVerificationCode(user.id, user.email, user.firstName),
+      this.updateRefreshTokenHash(user.id, tokens.refresh_token),
+      this.setCookies(response, tokens),
+    ]);
+
     try {
-      const tokens = await this.jwt.generateTokens(user.id);
-      await Promise.all([
-        this.sendVerificationCode(user.id, user.email, user.firstName),
-        this.updateRefreshTokenHash(user.id, tokens.refresh_token),
-        this.setCookies(response, tokens),
-      ]);
+      return response.status(HttpStatus.CREATED).json(user);
     } catch (e) {
       console.error(e);
       throw new Error(e.message);
