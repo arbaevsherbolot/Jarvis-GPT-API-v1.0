@@ -207,14 +207,33 @@ export class AuthService {
   }
 
   async editMe(userId: number, dto: EditMeDto) {
+    const { firstName, lastName, username, nationality, bio, phone } = dto;
+
     const user = await this.usersService.findById(userId);
+
+    if (dto.username) {
+      const existUsername = await this.usersService.findByUsername(
+        dto.username,
+      );
+
+      if (existUsername) {
+        throw new ConflictException(
+          'Username already taken. Please choose a different one',
+        );
+      }
+    }
 
     const updatedUser = await this.prisma.user.update({
       where: {
         id: user.id,
       },
       data: {
-        ...dto,
+        firstName,
+        lastName,
+        username,
+        nationality,
+        bio,
+        phone,
       },
       include: {
         location: true,
