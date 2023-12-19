@@ -17,6 +17,13 @@ export class ChatService {
   async createChat(dto: CreateChatDto, userId: number) {
     const { title, language } = dto;
 
+    const slug = title
+      .replace(/[:?#[\]@!$&'()*+%|,/;=]/g, '')
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+      .replace(/\s/g, '-');
+
     const user = await this.usersService.findById(userId);
 
     const existChat = await this.prisma.chat.findFirst({
@@ -35,6 +42,7 @@ export class ChatService {
       data: {
         userId: user.id,
         title,
+        slug,
         language,
       },
     });

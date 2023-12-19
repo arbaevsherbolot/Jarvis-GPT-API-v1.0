@@ -194,9 +194,11 @@ export class AuthService {
       request.headers['x-forwarded-for'] ||
       request.socket.remoteAddress ||
       '';
-    const locationData = await getLocation();
 
-    await this.updateOrCreateLocation(user, ip, locationData);
+    const ipAddress = Array.isArray(ip) ? ip.join(', ') : ip;
+    const locationData = await getLocation(ipAddress);
+
+    await this.updateOrCreateLocation(user, ipAddress, locationData);
 
     try {
       return response.status(HttpStatus.OK).json(user);
@@ -375,7 +377,7 @@ export class AuthService {
 
   async updateOrCreateLocation(
     user: User,
-    ip: string | string[],
+    ip: string,
     locationData: LocationData,
   ) {
     const existingLocation = await this.prisma.location.findFirst({
@@ -386,7 +388,7 @@ export class AuthService {
       await this.prisma.location.update({
         where: { id: existingLocation.id },
         data: {
-          ip: Array.isArray(ip) ? ip.join(', ') : ip,
+          ip: ip,
           ...locationData,
         },
       });
@@ -394,7 +396,7 @@ export class AuthService {
       await this.prisma.location.create({
         data: {
           userId: user.id,
-          ip: Array.isArray(ip) ? ip.join(', ') : ip,
+          ip: ip,
           ...locationData,
         },
       });

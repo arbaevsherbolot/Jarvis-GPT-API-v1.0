@@ -45,16 +45,14 @@ model User {
 }
 
 model Location {
-  id        Int     @id @default(autoincrement())
-  ip        String? @db.VarChar(50)
-  city      String? @db.VarChar(150)
-  region    String? @db.VarChar(150)
-  country   String? @db.VarChar(150)
-  latitude  String?
-  longitude String?
-  timezone  String?
-  user      User    @relation(fields: [userId], references: [id])
-  userId    Int
+  id       Int     @id @default(autoincrement())
+  ip       String? @db.VarChar(50)
+  city     String? @db.VarChar(150)
+  region   String? @db.VarChar(150)
+  country  String? @db.VarChar(150)
+  timezone String?
+  user     User    @relation(fields: [userId], references: [id])
+  userId   Int
 }
 
 model Message {
@@ -75,6 +73,7 @@ model Chat {
   userId    Int
   user      User      @relation(fields: [userId], references: [id])
   title     String    @db.VarChar(25)
+  slug      String
   messages  Message[]
   language  Languages @default(EN)
   isActive  Boolean   @default(true)

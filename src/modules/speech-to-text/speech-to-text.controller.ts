@@ -38,13 +38,4 @@ export class SpeechToTextController {
   ) {
     return await this.speechToTextService.startRecognition(file, userId, id);
   }
-
-  @Get(':id')
-  @HttpCode(HttpStatus.OK)
-  async getMessages(
-    @Param('id', ParseIntPipe) id: number,
-    @GetCurrentUserId() userId: number,
-  ) {
-    return await this.speechToTextService.getMessages(id, userId);
-  }
 }

@@ -65,6 +65,9 @@ dependencies:
   multer:
     specifier: ^1.4.5-lts.1
     version: 1.4.5-lts.1
+  node-ipinfo:
+    specifier: ^3.5.1
+    version: 3.5.1
   openai:
     specifier: ^4.17.4
     version: 4.17.4
@@ -5281,6 +5284,11 @@ packages:
     dependencies:
       yallist: 4.0.0
 
+  /lru-cache@7.18.3:
+    resolution: {integrity: sha512-jumlc0BIUrS3qJGgIkWZsyfAM7NCWiBcCDhnd+3NNM5KbBmLTgHVfWBcg6W+rLUsIpzpERPsvwUP7CckAQSOoA==}
+    engines: {node: '>=12'}
+    dev: false
+
   /macos-release@2.5.1:
     resolution: {integrity: sha512-DXqXhEM7gW59OjZO8NIjBCz9AQ1BEMrfiOAl4AYByHCtVHRF4KoGNO8mqQeM8lRCtQe/UnJ4imO/d2HdkKsd+A==}
     engines: {node: '>=6'}
@@ -5973,6 +5981,14 @@ packages:
   /node-int64@0.4.0:
     resolution: {integrity: sha512-O5lz91xSOeoXP6DulyHfllpq+Eg00MWitZIbtPfoSEvqIHdl5gfcY6hYzDWnj0qD5tz52PI08u9qUvSVeUBeHw==}
     dev: true
+
+  /node-ipinfo@3.5.1:
+    resolution: {integrity: sha512-sh9yzyItNmc6SetUfJaTn0vaHhbxmVd9oFJceo2PwMXrDdHgR5hEwOkHK+fXKypQRTc1KXq9pzMmrEzCFNFlow==}
+    engines: {node: '>=10'}
+    dependencies:
+      lru-cache: 7.18.3
+      subnet-check: 1.10.1
+    dev: false
 
   /node-releases@2.0.13:
     resolution: {integrity: sha512-uYr7J37ae/ORWdZeQ1xxMJe3NtdmqMC/JZK+geofDrkLUApKRHPd18/TxtBOJ4A0/+uUIliorNrfYV6s1b02eQ==}
@@ -7183,6 +7199,11 @@ packages:
       cheerio: 1.0.0-rc.12
       mediaquery-text: 1.2.0
       pick-util: 1.1.5
+    dev: false
+
+  /subnet-check@1.10.1:
+    resolution: {integrity: sha512-e8lXZ9ICcG42fFsMDZO5TTZ3uS2436b5hnx3uS4Z3XkAFuDLa5R3Pvt9lYhewKm/vCd48t14v0jFaSmVYOT2Kg==}
+    engines: {node: '>=4.0.0'}
     dev: false
 
   /superagent-proxy@3.0.0(superagent@8.1.2):

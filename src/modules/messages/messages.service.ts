@@ -3,33 +3,26 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { CreateMessageDto } from './dto';
 import { ChatGptService } from '../chat-gpt/chat-gpt.service';
-import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from '../users/users.service';
-
-type Languages = 'EN' | 'RU';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
-export class SpeechToTextService {
+export class MessagesService {
   constructor(
     private chatGptService: ChatGptService,
-    private prisma: PrismaService,
     private usersService: UsersService,
+    private prisma: PrismaService,
   ) {}
 
-  async startRecognition(
-    file: Express.Multer.File,
-    userId: number,
-    chatId: number,
-  ) {
+  async createMessage(dto: CreateMessageDto, chatId: number, userId: number) {
+    const { text } = dto;
+
     const user = await this.usersService.findById(userId);
     const chat = await this.findChatByIdAndUserId(chatId, user.id);
 
     const lang: Languages = chat.language as Languages;
-
-    if (!file) {
-      throw new NotFoundException('File not found');
-    }
 
     const messages = await this.prisma.message.findMany({
       where: {
@@ -42,29 +35,36 @@ export class SpeechToTextService {
       throw new ForbiddenException('Limit of 3 requests has been exceeded');
     }
 
+    const allMessages = [
+      ...chat.messages,
+      {
+        text,
+      },
+    ];
+
     try {
-      const transcript = await this.chatGptService.transcribeAudio(
-        file.buffer,
-        lang,
-      );
-
-      const allMessages = [
-        ...chat.messages,
-        {
-          text: transcript,
-        },
-      ];
-
       const aiReply = await this.getAiReply(lang, allMessages);
 
       const [message, reply] = await this.saveMessages(
         chat,
         user,
-        transcript,
+        text,
         aiReply,
       );
 
       return { message, reply };
+    } catch (e: any) {
+      console.error(e);
+      throw new Error(e.message);
+    }
+  }
+
+  async getMessages(chatId: number, userId: number) {
+    const user = await this.usersService.findById(userId);
+    const chat = await this.findChatByIdAndUserId(chatId, user.id);
+
+    try {
+      return chat.messages;
     } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
@@ -96,7 +96,7 @@ export class SpeechToTextService {
   private async saveMessages(
     chat: any,
     user: any,
-    transcript: string,
+    text: string,
     aiReply: string,
   ) {
     return this.prisma.$transaction([
@@ -104,7 +104,7 @@ export class SpeechToTextService {
         data: {
           chatId: chat.id,
           userId: user.id,
-          text: transcript,
+          text,
         },
       }),
       this.prisma.message.create({

@@ -10,6 +10,7 @@ import {
   UsersModule,
   ImageModule,
   UploadModule,
+  MessagesModule,
 } from './modules';
 import { APP_GUARD } from '@nestjs/core';
 import { AccessTokenGuard } from './modules/auth/common/guards';
@@ -45,6 +46,7 @@ import { join } from 'path';
     UsersModule,
     ImageModule,
     UploadModule,
+    MessagesModule,
   ],
   controllers: [],
   providers: [
