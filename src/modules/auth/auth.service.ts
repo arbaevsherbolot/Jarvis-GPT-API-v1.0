@@ -79,6 +79,12 @@ export class AuthService {
         );
       }
 
+      if (!existUser.isActive) {
+        return response
+          .status(HttpStatus.OK)
+          .redirect(`${process.env.FRONTEND_BASE_URL}/deactivated`);
+      }
+
       const tokens = await this.jwt.generateTokens(existUser.id);
       await Promise.all([
         this.updateRefreshTokenHash(existUser.id, tokens.refresh_token),
