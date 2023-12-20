@@ -59,6 +59,32 @@ export class ChatGptService {
     }
   }
 
+  async chatGptStreamRequest(text: string, prompt: string) {
+    try {
+      const stream = await this.openai.chat.completions.create({
+        model: 'gpt-4',
+        messages: [
+          {
+            role: 'system',
+            content: prompt,
+          },
+          {
+            role: 'user',
+            content: text,
+          },
+        ],
+        temperature: 0.5,
+        max_tokens: 1000,
+        stream: true,
+      });
+
+      return stream;
+    } catch (e: any) {
+      console.error(e);
+      throw new ServiceUnavailableException('Failed request to ChatGPT');
+    }
+  }
+
   async synthesizeSpeech(userId: number, text: string): Promise<string> {
     try {
       const ttsResponse = await this.openai.audio.speech.create({

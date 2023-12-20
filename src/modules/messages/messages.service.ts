@@ -7,6 +7,7 @@ import { CreateMessageDto } from './dto';
 import { ChatGptService } from '../chat-gpt/chat-gpt.service';
 import { UsersService } from '../users/users.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { Response } from 'express';
 
 @Injectable()
 export class MessagesService {
@@ -53,6 +54,39 @@ export class MessagesService {
       );
 
       return { message, reply };
+    } catch (e: any) {
+      console.error(e);
+      throw new Error(e.message);
+    }
+  }
+
+  async createStreamMessage(
+    dto: CreateMessageDto,
+    chatId: number,
+    userId: number,
+    response: Response,
+  ) {
+    const { text } = dto;
+
+    const user = await this.usersService.findById(userId);
+    const chat = await this.findChatByIdAndUserId(chatId, user.id);
+
+    response.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    response.setHeader('Transfer-Encoding', 'chunked');
+
+    try {
+      const stream = await this.chatGptService.chatGptStreamRequest(
+        text,
+        `Imagine you're an AI functioning as my personal Jarvis, your name is Jarvis!, and you can call me Sher!, assisting me in various tasks. Answer very shortly and clear, your reply limit is 1000 characters, my today's topic is ${chat.title}`,
+      );
+
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content || '';
+        response.write(content);
+        // process.stdout.write(content);
+      }
+
+      response.end();
     } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
