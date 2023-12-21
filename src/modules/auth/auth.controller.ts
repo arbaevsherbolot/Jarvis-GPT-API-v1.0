@@ -81,12 +81,8 @@ export class AuthController {
 
   @Get('me')
   @HttpCode(HttpStatus.OK)
-  async getMe(
-    @GetCurrentUserId() userId: number,
-    @Req() request: Request,
-    @Res() response: Response,
-  ) {
-    return await this.authService.getMe(userId, request, response);
+  async getMe(@GetCurrentUserId() userId: number, @Req() request: Request) {
+    return await this.authService.getMe(userId, request);
   }
 
   @Patch('me')

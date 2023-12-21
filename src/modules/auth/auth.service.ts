@@ -195,7 +195,7 @@ export class AuthService {
     }
   }
 
-  async getMe(userId: number, request: Request, response: Response) {
+  async getMe(userId: number, request: Request) {
     const user = await this.usersService.findById(userId);
     const ip =
       request.headers['x-real-ip'] ||
