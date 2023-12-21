@@ -221,9 +221,9 @@ export class AuthService {
 
     const user = await this.usersService.findById(userId);
 
-    if (dto.username) {
+    if (username) {
       const existUsername = await this.usersService.findByUsername(
-        dto.username,
+        username.toLowerCase(),
       );
 
       if (existUsername) {
@@ -240,7 +240,7 @@ export class AuthService {
       data: {
         firstName,
         lastName,
-        username,
+        username: username.toLowerCase(),
         nationality,
         bio,
         phone,
@@ -260,11 +260,7 @@ export class AuthService {
     }
   }
 
-  async emailVerification(
-    userId: number,
-    dto: EmailVerificationDto,
-    response: Response,
-  ) {
+  async emailVerification(userId: number, dto: EmailVerificationDto) {
     const { code } = dto;
 
     const user = await this.usersService.findById(userId);

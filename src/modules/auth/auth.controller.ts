@@ -100,9 +100,8 @@ export class AuthController {
   async emailVerification(
     @GetCurrentUserId() userId: number,
     @Body() dto: EmailVerificationDto,
-    @Res() response: Response,
   ) {
-    return await this.authService.emailVerification(userId, dto, response);
+    return await this.authService.emailVerification(userId, dto);
   }
 
   @Public()
