@@ -111,7 +111,8 @@ export class UsersService {
     }
 
     const hashedPassword = await hash(password);
-    const username = email.split('@')[0].trim();
+    const username = await this.generateUniqueUsername(email);
+
     const user = await this.prisma.user.create({
       data: {
         firstName,
@@ -133,6 +134,22 @@ export class UsersService {
       console.error(e);
       throw new Error(e.message);
     }
+  }
+
+  private async generateUniqueUsername(email: string): Promise<string> {
+    let username = email.split('@')[0].trim();
+
+    const existingUser = await this.prisma.user.findUnique({
+      where: {
+        username,
+      },
+    });
+
+    if (existingUser) {
+      username = `${username}-${Date.now()}`;
+    }
+
+    return username;
   }
 
   async findById(id: number): Promise<User> {

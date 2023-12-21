@@ -148,7 +148,7 @@ export class AuthService {
     ]);
 
     try {
-      return response.status(HttpStatus.OK).json(user);
+      return user;
     } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
@@ -166,7 +166,7 @@ export class AuthService {
     ]);
 
     try {
-      return response.status(HttpStatus.CREATED).json(user);
+      return user;
     } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
@@ -209,7 +209,7 @@ export class AuthService {
     await this.updateOrCreateLocation(user, ipAddress, locationData);
 
     try {
-      return response.status(HttpStatus.OK).json(user);
+      return user;
     } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
@@ -289,7 +289,7 @@ export class AuthService {
     });
 
     try {
-      return response.status(HttpStatus.OK).json({ success: true });
+      return { success: true };
     } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
