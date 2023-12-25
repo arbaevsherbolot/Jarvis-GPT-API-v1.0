@@ -240,7 +240,7 @@ export class AuthService {
       data: {
         firstName,
         lastName,
-        username: username.toLowerCase(),
+        username: username && username.toLowerCase(),
         nationality,
         bio,
         phone,
