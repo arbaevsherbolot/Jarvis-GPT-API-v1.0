@@ -58,7 +58,7 @@ export class AuthService {
 
     const existUser = await this.prisma.user.findUnique({
       where: {
-        email,
+        email: email.toLocaleLowerCase(),
       },
     });
 
