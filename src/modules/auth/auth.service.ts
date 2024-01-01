@@ -37,7 +37,6 @@ export class AuthService {
     return response
       .cookie('access_token', tokens['access_token'], {
         maxAge: 60 * 30 * 1000, // 30 minutes
-        domain: 'sherbolotarbaev.pro',
         secure: isProduction,
         sameSite: 'none',
         path: '/',
@@ -45,7 +44,6 @@ export class AuthService {
       .cookie('refresh_token', tokens['refresh_token'], {
         maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
         secure: isProduction,
-        domain: 'sherbolotarbaev.pro',
         sameSite: 'none',
         path: '/',
       });
