@@ -1,10 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
+import bodyParser from 'body-parser';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 
 async function start() {
+  const app = await NestFactory.create(AppModule);
+
   // Set CORS options
   const corsOptions: CorsOptions = {
     origin: process.env.FRONTEND_BASE_URL,
@@ -23,18 +26,23 @@ async function start() {
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   };
 
-  const app = await NestFactory.create(AppModule, { cors: corsOptions });
-  const port = process.env.PORT || 3000;
+  // Set Body Parser
+  app.use(bodyParser.json({ limit: '5mb' }));
 
   // Set the global validation pipes for our server
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({ whitelist: true, validateCustomDecorators: true }),
+  );
 
   // Set the Cookie Parser
   app.use(cookieParser());
 
+  // Enable CORS for server
+  app.enableCors(corsOptions);
+
   // Start the Nest.js application and log the server's address
-  await app.listen(port, () =>
-    console.log(`📢 Server starting on: http://localhost:${port}/ ⚡️`),
-  );
+  await app.listen(process.env.PORT);
+  Logger.log(`Server is running on: http://localhost:${process.env.PORT} ⚡️`);
 }
+
 start();

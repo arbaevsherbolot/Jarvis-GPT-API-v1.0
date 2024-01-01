@@ -21,7 +21,7 @@ export class UsersService {
 
     if (user.role === 'USER') {
       throw new ForbiddenException(
-        'You lack permission to access users information',
+        'You do not have the necessary permission to access users information',
       );
     }
 
@@ -83,14 +83,64 @@ export class UsersService {
 
     if (user.role === 'USER') {
       throw new ForbiddenException(
-        'You lack permission to access user information',
+        'You do not have the necessary permission to access user information',
       );
+    }
+
+    // Ensure that username is a string
+    if (!isNaN(parseInt(username))) {
+      throw new ConflictException('Parameter username must be a string');
     }
 
     const dbUser = await this.findByUsername(username);
 
     try {
       return dbUser;
+    } catch (e: any) {
+      console.error(e);
+      throw new Error(e.message);
+    }
+  }
+
+  async deleteUser(userId: number, username: string) {
+    const user = await this.findById(userId);
+
+    if (user.role === 'USER') {
+      throw new ForbiddenException(
+        'You do not have the necessary permission to delete a user',
+      );
+    }
+
+    // Ensure that username is a string
+    if (!isNaN(parseInt(username))) {
+      throw new ConflictException('Parameter username must be a string');
+    }
+
+    const dbUser = await this.findByUsername(username);
+
+    if (dbUser.id === user.id) {
+      throw new ForbiddenException(
+        `You can't delete yourself, please inform someone with a Superadmin role`,
+      );
+    }
+
+    if (
+      (dbUser.role === 'ADMIN' || dbUser.role === 'SUPERADMIN') &&
+      user.role === 'ADMIN'
+    ) {
+      throw new ForbiddenException(
+        'You do not have the necessary permission to delete an Admin or Superadmin',
+      );
+    }
+
+    await this.prisma.user.delete({
+      where: {
+        id: dbUser.id,
+      },
+    });
+
+    try {
+      return { success: true };
     } catch (e: any) {
       console.error(e);
       throw new Error(e.message);

@@ -25,7 +25,7 @@ export class AccessTokenGuard extends AuthGuard('jwt') {
       }
 
       const request = context.switchToHttp().getRequest();
-      const accessToken = this.extractTokenFromCookies(request);
+      const accessToken = this.extractToken(request);
 
       if (!accessToken) {
         throw new UnauthorizedException('Access token is missing');
@@ -42,10 +42,15 @@ export class AccessTokenGuard extends AuthGuard('jwt') {
     }
   }
 
-  private extractTokenFromCookies(request: any): string | null {
-    if (request.cookies && request.cookies.session) {
+  private extractToken(request: any): string | null {
+    const authHeader = request.headers['authorization'];
+
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      return authHeader.slice(7);
+    } else if (request.cookies && request.cookies.session) {
       return request.cookies.session;
     }
+
     return null;
   }
 }

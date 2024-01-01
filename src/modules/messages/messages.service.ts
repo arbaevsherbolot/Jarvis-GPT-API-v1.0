@@ -8,6 +8,7 @@ import { ChatGptService } from '../chat-gpt/chat-gpt.service';
 import { UsersService } from '../users/users.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { Response } from 'express';
+import { Writable } from 'stream';
 
 @Injectable()
 export class MessagesService {
@@ -68,11 +69,12 @@ export class MessagesService {
   ) {
     const { text } = dto;
 
+    response.setHeader('Content-Type', 'text/event-stream');
+    response.setHeader('Cache-Control', 'no-cache');
+    response.setHeader('Connection', 'keep-alive');
+
     const user = await this.usersService.findById(userId);
     const chat = await this.findChatByIdAndUserId(chatId, user.id);
-
-    response.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    response.setHeader('Transfer-Encoding', 'chunked');
 
     try {
       const stream = await this.chatGptService.chatGptStreamRequest(
@@ -81,9 +83,8 @@ export class MessagesService {
       );
 
       for await (const chunk of stream) {
-        const content = chunk.choices[0]?.delta?.content || '';
-        response.write(content);
-        // process.stdout.write(content);
+        const text = chunk.choices[0].delta.content ?? '';
+        response.write(text);
       }
 
       response.end();

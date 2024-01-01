@@ -38,18 +38,10 @@ export class AuthService {
       .cookie('session', tokens['access_token'], {
         maxAge: 60 * 30 * 1000, // 30 minutes
         secure: isProduction,
-        httpOnly: isProduction,
-        // sameSite: 'lax',
-        // domain: '.vercel.app',
-        // path: '/',
       })
       .cookie('session-refresh', tokens['refresh_token'], {
         maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
         secure: isProduction,
-        httpOnly: isProduction,
-        // sameSite: 'lax',
-        // domain: '.vercel.app',
-        // path: '/',
       });
   }
 
@@ -148,7 +140,10 @@ export class AuthService {
     ]);
 
     try {
-      return user;
+      return {
+        user,
+        tokens,
+      };
     } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
@@ -166,7 +161,10 @@ export class AuthService {
     ]);
 
     try {
-      return user;
+      return {
+        user,
+        tokens,
+      };
     } catch (e: any) {
       console.error(e);
       throw new Error(e.message);

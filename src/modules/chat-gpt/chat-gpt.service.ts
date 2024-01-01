@@ -1,6 +1,9 @@
 import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import OpenAIApi from 'openai';
-import { ChatCompletion, ChatCompletionMessageParam } from 'openai/resources';
+import {
+  ChatCompletion,
+  ChatCompletionMessageParam,
+} from 'openai/resources';
 import { File } from '@web-std/file';
 import { SupabaseService } from '../supabase/supabase.service';
 
@@ -61,7 +64,7 @@ export class ChatGptService {
 
   async chatGptStreamRequest(text: string, prompt: string) {
     try {
-      const stream = await this.openai.chat.completions.create({
+      const completion = await this.openai.chat.completions.create({
         model: 'gpt-4',
         messages: [
           {
@@ -78,7 +81,7 @@ export class ChatGptService {
         stream: true,
       });
 
-      return stream;
+      return completion;
     } catch (e: any) {
       console.error(e);
       throw new ServiceUnavailableException('Failed request to ChatGPT');

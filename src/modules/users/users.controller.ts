@@ -1,5 +1,6 @@
 import {
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -29,5 +30,14 @@ export class UsersController {
     @Param('username') username: string,
   ) {
     return await this.usersService.getUser(userId, username);
+  }
+
+  @Delete(':username')
+  @HttpCode(HttpStatus.OK)
+  async deleteUser(
+    @GetCurrentUserId() userId: number,
+    @Param('username') username: string,
+  ) {
+    return await this.usersService.deleteUser(userId, username);
   }
 }

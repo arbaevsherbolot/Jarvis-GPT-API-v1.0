@@ -12,7 +12,7 @@ import {
 import { CreateMessageDto } from './dto';
 import { MessagesService } from './messages.service';
 import { GetCurrentUserId } from '../auth/common/decorators';
-import { Response, response } from 'express';
+import { Response } from 'express';
 
 @Controller('messages')
 export class MessagesController {
