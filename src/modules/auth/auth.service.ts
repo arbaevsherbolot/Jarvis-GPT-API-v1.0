@@ -140,10 +140,7 @@ export class AuthService {
     ]);
 
     try {
-      return {
-        user,
-        tokens,
-      };
+      return user;
     } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
@@ -161,10 +158,7 @@ export class AuthService {
     ]);
 
     try {
-      return {
-        user,
-        tokens,
-      };
+      return user;
     } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
