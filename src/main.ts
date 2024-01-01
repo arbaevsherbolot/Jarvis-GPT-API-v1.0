@@ -6,6 +6,8 @@ import bodyParser from 'body-parser';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 
 async function start() {
+  const app = await NestFactory.create(AppModule);
+
   // Set CORS options
   const corsOptions: CorsOptions = {
     origin: process.env.FRONTEND_BASE_URL,
@@ -24,8 +26,6 @@ async function start() {
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   };
 
-  const app = await NestFactory.create(AppModule, { cors: corsOptions });
-
   // Set Body Parser
   app.use(bodyParser.json({ limit: '5mb' }));
 
@@ -36,6 +36,9 @@ async function start() {
 
   // Set the Cookie Parser
   app.use(cookieParser());
+
+  // Enable CORS for server
+  app.enableCors(corsOptions);
 
   // Start the Nest.js application and log the server's address
   await app.listen(process.env.PORT);
