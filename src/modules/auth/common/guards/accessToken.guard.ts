@@ -28,7 +28,9 @@ export class AccessTokenGuard extends AuthGuard('jwt') {
       const accessToken = this.extractToken(request);
 
       if (!accessToken) {
-        throw new UnauthorizedException('Access token is missing');
+        throw new UnauthorizedException(
+          'Your login token has ended. Please log in again to continue',
+        );
       }
 
       const canActivateResult = await super.canActivate(context);
@@ -47,8 +49,8 @@ export class AccessTokenGuard extends AuthGuard('jwt') {
 
     if (authHeader && authHeader.startsWith('Bearer ')) {
       return authHeader.slice(7);
-    } else if (request.cookies && request.cookies.session) {
-      return request.cookies.session;
+    } else if (request.cookies && request.cookies.access_token) {
+      return request.cookies.access_token;
     }
 
     return null;

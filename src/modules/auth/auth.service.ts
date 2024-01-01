@@ -35,11 +35,11 @@ export class AuthService {
     const isProduction = process.env.MODE === 'PRODUCTION';
 
     return response
-      .cookie('session', tokens['access_token'], {
+      .cookie('access_token', tokens['access_token'], {
         maxAge: 60 * 30 * 1000, // 30 minutes
         secure: isProduction,
       })
-      .cookie('session-refresh', tokens['refresh_token'], {
+      .cookie('refresh_token', tokens['refresh_token'], {
         maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
         secure: isProduction,
       });
@@ -47,8 +47,8 @@ export class AuthService {
 
   private async clearCookies(response: Response) {
     return response
-      .clearCookie('session')
-      .clearCookie('session-refresh')
+      .clearCookie('access_token')
+      .clearCookie('refresh_token')
       .status(200)
       .json({ success: true });
   }
@@ -139,6 +139,8 @@ export class AuthService {
       this.setCookies(response, tokens),
     ]);
 
+    user.password = undefined;
+
     try {
       return user;
     } catch (e: any) {
@@ -156,6 +158,8 @@ export class AuthService {
       this.updateRefreshTokenHash(user.id, tokens.refresh_token),
       this.setCookies(response, tokens),
     ]);
+
+    user.password = undefined;
 
     try {
       return user;
@@ -199,6 +203,8 @@ export class AuthService {
     const locationData = await getLocation(ipAddress);
 
     await this.updateOrCreateLocation(user, ipAddress, locationData);
+
+    user.password = undefined;
 
     try {
       return user;

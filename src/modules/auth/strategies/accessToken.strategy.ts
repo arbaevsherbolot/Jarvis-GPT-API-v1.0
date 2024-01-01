@@ -12,8 +12,8 @@ const extractToken = (request: any): string | null => {
 
   if (authHeader && authHeader.startsWith('Bearer ')) {
     return authHeader.slice(7);
-  } else if (request.cookies && request.cookies.session) {
-    return request.cookies.session;
+  } else if (request.cookies && request.cookies.access_token) {
+    return request.cookies.access_token;
   }
 
   return null;

@@ -152,7 +152,7 @@ export class UsersService {
 
     const existUser = await this.prisma.user.findUnique({
       where: {
-        email,
+        email: email.toLowerCase(),
       },
     });
 
@@ -167,7 +167,7 @@ export class UsersService {
       data: {
         firstName,
         lastName,
-        email,
+        email: email.toLowerCase(),
         username,
         password: hashedPassword,
       },
@@ -233,7 +233,10 @@ export class UsersService {
   async findByEmailOrUsername(emailOrUsername: string): Promise<User> {
     const user = await this.prisma.user.findFirst({
       where: {
-        OR: [{ email: emailOrUsername }, { username: emailOrUsername }],
+        OR: [
+          { email: emailOrUsername.toLocaleLowerCase() },
+          { username: emailOrUsername.toLocaleLowerCase() },
+        ],
       },
       include: {
         location: true,
@@ -261,7 +264,7 @@ export class UsersService {
   async findByEmail(email: string): Promise<User> {
     const user = await this.prisma.user.findUnique({
       where: {
-        email,
+        email: email.toLocaleLowerCase(),
       },
       include: {
         location: true,
@@ -289,7 +292,7 @@ export class UsersService {
   async findByUsername(username: string): Promise<User> {
     const user = await this.prisma.user.findUnique({
       where: {
-        username,
+        username: username.toLocaleLowerCase(),
       },
       include: {
         location: true,
