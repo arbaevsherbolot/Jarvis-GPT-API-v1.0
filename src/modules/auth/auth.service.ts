@@ -38,14 +38,12 @@ export class AuthService {
       .cookie('access_token', tokens['access_token'], {
         maxAge: 60 * 30 * 1000, // 30 minutes
         secure: isProduction,
-        domain: 'jarvis-gpt-v1.vercel.app',
         sameSite: 'none',
         path: '/',
       })
       .cookie('refresh_token', tokens['refresh_token'], {
         maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
         secure: isProduction,
-        domain: 'jarvis-gpt-v1.vercel.app',
         sameSite: 'none',
         path: '/',
       });
