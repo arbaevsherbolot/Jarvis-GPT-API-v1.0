@@ -35,18 +35,34 @@ export class AuthService {
     const isProduction = process.env.MODE === 'PRODUCTION';
 
     return response
-      .cookie('access_token', tokens['access_token'], {
-        maxAge: 60 * 30 * 1000, // 30 minutes
-        secure: isProduction,
-        sameSite: 'none',
-        path: '/',
-      })
-      .cookie('refresh_token', tokens['refresh_token'], {
-        maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
-        secure: isProduction,
-        sameSite: 'none',
-        path: '/',
-      });
+      .cookie(
+        'access_token',
+        tokens['access_token'],
+        isProduction
+          ? {
+              maxAge: 60 * 30 * 1000, // 30 minutes
+              secure: true,
+              sameSite: 'none',
+              path: '/',
+            }
+          : {
+              maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
+            },
+      )
+      .cookie(
+        'refresh_token',
+        tokens['refresh_token'],
+        isProduction
+          ? {
+              maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
+              secure: true,
+              sameSite: 'none',
+              path: '/',
+            }
+          : {
+              maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
+            },
+      );
   }
 
   private async clearCookies(response: Response) {
@@ -203,7 +219,7 @@ export class AuthService {
       request.socket.remoteAddress ||
       '';
 
-    const ipAddress = Array.isArray(ip) ? ip.join(', ') : ip;
+    const ipAddress = Array.isArray(ip) ? ip[0] : ip;
     const locationData = await getLocation(ipAddress);
 
     await this.updateOrCreateLocation(user, ipAddress, locationData);

@@ -2,6 +2,8 @@ type UserRole = 'USER' | 'ADMIN' | 'SUPERADMIN';
 
 type Languages = 'RU' | 'EN';
 
+type RequestType = 'STREAM' | 'SINGLE';
+
 type User = {
   id: number;
   firstName: string;
@@ -24,6 +26,16 @@ type User = {
   lastVisit: string;
   createdAt: string;
   updatedAt: string;
+};
+
+type Requests = {
+  userId: number;
+  user: User;
+  chatId: number;
+  chat: Chat;
+  type: RequestType;
+  route: string;
+  tries: number;
 };
 
 type Location = {

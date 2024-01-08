@@ -27,12 +27,14 @@ async function start() {
   };
 
   // Set Body Parser
-  app.use(bodyParser.json({ limit: '5mb' }));
+  app.use(
+    bodyParser.urlencoded({
+      extended: true,
+    }),
+  );
 
   // Set the global validation pipes for our server
-  app.useGlobalPipes(
-    new ValidationPipe({ whitelist: true, validateCustomDecorators: true }),
-  );
+  app.useGlobalPipes(new ValidationPipe());
 
   // Set the Cookie Parser
   app.use(cookieParser());

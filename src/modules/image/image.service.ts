@@ -14,6 +14,20 @@ export class ImageService {
     private supabaseService: SupabaseService,
   ) {}
 
+  async recognizeImage(
+    text: string,
+    userId: number,
+    file: Express.Multer.File,
+  ): Promise<{
+    output: string;
+    url: string;
+  }> {
+    const path = await this.supabaseService.uploadPhoto(userId, file);
+    const url = await this.supabaseService.getUrl('/photos', path);
+    const output = await this.chatGptService.chatGptVision(text, url);
+    return { output, url };
+  }
+
   async newImage(
     id: number,
     userId: number,
@@ -37,26 +51,22 @@ export class ImageService {
       throw new NotFoundException('Chat not found');
     }
 
-    const path = await this.supabaseService.uploadPhoto(user.id, file);
-    const url = await this.supabaseService.getUrl('/photos', path);
-    const output = await this.chatGptService.chatGptVision(text, url);
+    const { output, url } = await this.recognizeImage(text, user.id, file);
     const audioUrl = await this.chatGptService.synthesizeSpeech(
       user.id,
       output,
     );
 
-    const image = await this.prisma.image.create({
-      data: {
-        chatId: chat.id,
-        text,
-        url,
-        output,
-        audioSource: audioUrl,
-      },
-    });
-
     try {
-      return image;
+      return this.prisma.image.create({
+        data: {
+          chatId: chat.id,
+          text,
+          url,
+          output,
+          audioSource: audioUrl,
+        },
+      });
     } catch (e: any) {
       console.error(e);
       throw new Error(e.message);
@@ -99,7 +109,6 @@ export class ImageService {
 
   async generateImage(id: number, dto: generateImageDto) {
     const { text } = dto;
-
     const chat = await this.prisma.chat.findFirst({
       where: {
         id,
@@ -110,10 +119,8 @@ export class ImageService {
       throw new NotFoundException('Chat not found');
     }
 
-    const url = await this.chatGptService.generateImage(text);
-
     try {
-      return url;
+      return this.chatGptService.generateImage(text);
     } catch (e: any) {
       console.error(e);
       throw new Error(e.message);

@@ -13,6 +13,7 @@ import { PrismaService } from '../prisma/prisma.service';
     SupabaseService,
     UsersService,
     PrismaService,
+    SupabaseService,
   ],
   controllers: [MessagesController],
 })

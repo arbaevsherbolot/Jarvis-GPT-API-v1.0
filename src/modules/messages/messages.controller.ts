@@ -8,11 +8,14 @@ import {
   ParseIntPipe,
   Post,
   Res,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CreateMessageDto } from './dto';
 import { MessagesService } from './messages.service';
 import { GetCurrentUserId } from '../auth/common/decorators';
 import { Response } from 'express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('messages')
 export class MessagesController {
@@ -30,14 +33,17 @@ export class MessagesController {
 
   @Post(':chatId/stream')
   @HttpCode(HttpStatus.OK)
+  @UseInterceptors(FilesInterceptor('files'))
   async createStreamMessage(
     @Body() dto: CreateMessageDto,
+    @UploadedFiles() files: Express.Multer.File[],
     @Param('chatId', ParseIntPipe) chatId: number,
     @GetCurrentUserId() userId: number,
     @Res() response: Response,
   ) {
     return await this.messagesService.createStreamMessage(
       dto,
+      files,
       chatId,
       userId,
       response,

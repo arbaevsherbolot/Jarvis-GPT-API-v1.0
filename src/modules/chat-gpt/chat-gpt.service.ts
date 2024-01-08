@@ -2,10 +2,13 @@ import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import OpenAIApi from 'openai';
 import {
   ChatCompletion,
+  ChatCompletionChunk,
+  ChatCompletionContentPart,
   ChatCompletionMessageParam,
 } from 'openai/resources';
 import { File } from '@web-std/file';
 import { SupabaseService } from '../supabase/supabase.service';
+import { Stream } from 'openai/streaming';
 
 type Message = {
   id: number;
@@ -62,7 +65,10 @@ export class ChatGptService {
     }
   }
 
-  async chatGptStreamRequest(text: string, prompt: string) {
+  async chatGptStreamRequest(
+    text: string,
+    prompt: string,
+  ): Promise<Stream<ChatCompletionChunk>> {
     try {
       const completion = await this.openai.chat.completions.create({
         model: 'gpt-4',
@@ -161,12 +167,47 @@ export class ChatGptService {
     }
   }
 
+  async chatGptVisionStream(
+    text: string,
+    urls: string[],
+  ): Promise<Stream<ChatCompletionChunk>> {
+    const messages: ChatCompletionMessageParam[] = [
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text },
+          ...urls
+            .map((url): ChatCompletionContentPart[] => [
+              { type: 'image_url', image_url: { url, detail: 'high' } },
+            ])
+            .flat(),
+        ],
+      },
+    ];
+
+    try {
+      const completion = await this.openai.chat.completions.create({
+        model: 'gpt-4-vision-preview',
+        messages,
+        temperature: 0.5,
+        max_tokens: 1000,
+        stream: true,
+      });
+
+      return completion;
+    } catch (e: any) {
+      console.error(e);
+      throw new ServiceUnavailableException('Unable to recognize image');
+    }
+  }
+
   async generateImage(text: string): Promise<string> {
     try {
       const { data } = await this.openai.images.generate({
         model: 'dall-e-3',
         prompt: text,
         response_format: 'url',
+        style: 'natural',
       });
 
       return data[0].url;
